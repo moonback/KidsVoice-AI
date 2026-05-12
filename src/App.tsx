@@ -4,13 +4,16 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AudioRecorder } from "./lib/AudioRecorder";
 import { AudioPlayer } from "./lib/AudioPlayer";
+import { AnimatedCharacter } from "./components/AnimatedCharacter";
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "connecting" | "listening">("idle");
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const audioRecorder = useRef<AudioRecorder | null>(null);
   const audioPlayer = useRef<AudioPlayer | null>(null);
   const sessionRef = useRef<any>(null);
+  const speakingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     audioRecorder.current = new AudioRecorder();
@@ -48,9 +51,14 @@ export default function App() {
               message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio) {
               audioPlayer.current?.play(base64Audio);
+              setIsSpeaking(true);
+              if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
+              speakingTimeoutRef.current = setTimeout(() => setIsSpeaking(false), 1500);
             }
             if (message.serverContent?.interrupted) {
               audioPlayer.current?.clearQueue();
+              setIsSpeaking(false);
+              if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
             }
           },
           onclose: () => {
@@ -91,6 +99,8 @@ export default function App() {
     audioRecorder.current?.stop();
     audioPlayer.current?.clearQueue();
     setStatus("idle");
+    setIsSpeaking(false);
+    if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
   };
 
   return (
@@ -169,34 +179,13 @@ export default function App() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={startSession}
-                className="w-48 h-48 rounded-full bg-gradient-to-tr from-slate-800 to-slate-900 flex items-center justify-center text-slate-300 shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-700/50 hover:text-white hover:border-slate-600 transition-all"
+                className="relative rounded-full focus:outline-none"
+                title="Clique pour parler !"
               >
-                <Mic className="w-16 h-16" />
+                <AnimatedCharacter status={status} isSpeaking={isSpeaking} />
               </motion.button>
-            ) : status === "connecting" ? (
-              <div className="w-48 h-48 rounded-full bg-gradient-to-tr from-blue-900/40 to-purple-900/40 flex items-center justify-center text-blue-400 border border-blue-500/30 backdrop-blur-sm">
-                <Loader2 className="w-12 h-12 animate-spin" />
-              </div>
             ) : (
-              <motion.div
-                className="w-64 h-64 rounded-full bg-gradient-to-tr from-[#1A73E8] via-[#9B72CB] to-[#D96570] shadow-[0_0_80px_rgba(155,114,203,0.4)] flex items-center justify-center relative overflow-hidden"
-              >
-                 {/* Inner abstract waves */}
-                 <div className="absolute inset-0 opacity-40 mix-blend-overlay">
-                    <svg viewBox="0 0 200 200" className="w-full h-full animate-[spin_10s_linear_infinite]">
-                      <path fill="white" d="M40,100 Q40,40 100,40 T160,100 T100,160 T40,100" opacity="0.5"/>
-                      <path fill="white" d="M50,100 Q50,50 100,50 T150,100 T100,150 T50,100" opacity="0.3"/>
-                    </svg>
-                 </div>
-                 <Mic className="w-16 h-16 text-white drop-shadow-lg relative z-10" />
-                 <motion.button
-                   whileHover={{ scale: 1.1 }}
-                   whileTap={{ scale: 0.9 }}
-                   onClick={stopSession}
-                   className="absolute inset-0 z-20 w-full h-full opacity-0 cursor-pointer"
-                   title="Arrêter"
-                 />
-              </motion.div>
+              <AnimatedCharacter status={status} isSpeaking={isSpeaking} />
             )}
           </div>
         </div>
@@ -217,7 +206,7 @@ export default function App() {
                   exit={{ opacity: 0, y: -10 }}
                   className="text-xl text-slate-400 font-light leading-relaxed"
                 >
-                  Appuie sur le micro pour parler
+                  Appuie sur moi pour parler !
                 </motion.p>
               )}
               {status === "connecting" && (
