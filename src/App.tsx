@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AudioRecorder } from "./lib/AudioRecorder";
 import { AudioPlayer } from "./lib/AudioPlayer";
+import { SYSTEM_PROMPT } from "./lib/systemPrompt";
 import { AnimatedCharacter } from "./components/AnimatedCharacter";
 
 export default function App() {
@@ -76,8 +77,7 @@ export default function App() {
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } },
           },
-          systemInstruction:
-            "Tu es un assistant amical, joyeux et enthousiaste pour les enfants. Tu parles en français de manière simple, ludique et rassurante.",
+          systemInstruction: SYSTEM_PROMPT,
         },
       });
 
