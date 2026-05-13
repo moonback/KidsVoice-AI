@@ -9,6 +9,7 @@ import { buildSystemPrompt } from "./lib/systemPrompt";
 import { AnimatedCharacter } from "./components/AnimatedCharacter";
 import { AvatarSelector } from "./components/AvatarSelector";
 import { AVATARS, loadSavedAvatar, saveAvatar, loadChildName, saveChildName, type AvatarId } from "./lib/avatarConfig";
+import { getUsageStatus, trackUsage, getRemainingMinutes, type UsageStatus } from "./lib/usageLimits";
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "connecting" | "listening">("idle");
@@ -18,6 +19,7 @@ export default function App() {
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [childName, setChildName] = useState(loadChildName());
   const [audioLevel, setAudioLevel] = useState(0);
+  const [usageStatus, setUsageStatus] = useState<UsageStatus>(getUsageStatus());
   const audioLevelRef = useRef(0);
   const rafRef = useRef<number | null>(null);
 
@@ -41,12 +43,34 @@ export default function App() {
   useEffect(() => {
     audioRecorder.current = new AudioRecorder();
     audioPlayer.current = new AudioPlayer();
+
+    // Check usage status every minute
+    const statusInterval = setInterval(() => {
+      const status = getUsageStatus();
+      setUsageStatus(status);
+      if (status.isRestricted && sessionRef.current) {
+        stopSession();
+      }
+    }, 60000);
+
     return () => {
       audioRecorder.current?.stop();
       audioPlayer.current?.stop();
       sessionRef.current?.close();
+      clearInterval(statusInterval);
     };
   }, []);
+
+  // Usage tracking effect
+  useEffect(() => {
+    let timer: any;
+    if (status === "listening" || isSpeaking) {
+      timer = setInterval(() => {
+        trackUsage(10); // track 10 seconds
+      }, 10000);
+    }
+    return () => clearInterval(timer);
+  }, [status, isSpeaking]);
 
   /** Handle avatar selection — persist and update state */
   const handleAvatarSelect = (id: AvatarId) => {
@@ -56,11 +80,11 @@ export default function App() {
   };
 
   const startSession = async () => {
-    // Prevent multiple concurrent sessions
-    if (sessionRef.current) {
-      // If a session already exists, close it before starting a new one
-      sessionRef.current.close();
-      sessionRef.current = null;
+    const statusCheck = getUsageStatus();
+    if (statusCheck.isRestricted) {
+      setUsageStatus(statusCheck);
+      setErrorMsg(statusCheck.message);
+      return;
     }
 
     setStatus("connecting");
@@ -238,11 +262,33 @@ export default function App() {
             </motion.button>
           )}
           <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700/50">
-            <div className="w-2 h-2 rounded-full bg-green-400"></div>
-            <span>En ligne</span>
+            <div className={`w-2 h-2 rounded-full ${usageStatus.isRestricted ? "bg-amber-400" : "bg-green-400"}`}></div>
+            <span>{usageStatus.isRestricted ? "Mode Repos" : "En ligne"}</span>
           </div>
         </div>
       </nav>
+
+      {/* Rest Mode Overlay */}
+      <AnimatePresence>
+        {usageStatus.isRestricted && status === "idle" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-40 w-full max-w-md px-6"
+          >
+            <div className="bg-amber-900/40 border border-amber-500/30 backdrop-blur-xl p-6 rounded-[32px] text-center shadow-2xl">
+              <span className="text-3xl mb-3 block">{usageStatus.reason === "night" ? "🌙" : "⏳"}</span>
+              <h3 className="text-xl font-bold text-amber-200 mb-2">
+                {usageStatus.reason === "night" ? "C'est l'heure de dormir" : "Pause nécessaire"}
+              </h3>
+              <p className="text-amber-100/80 text-sm leading-relaxed">
+                {usageStatus.message}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Avatar Selector Modal */}
       <AvatarSelector
@@ -308,10 +354,10 @@ export default function App() {
                 className="relative rounded-full focus:outline-none"
                 title="Clique pour parler !"
               >
-                <AnimatedCharacter status={status} isSpeaking={isSpeaking} avatarId={avatarId} audioLevel={audioLevel} />
+                <AnimatedCharacter status={status} isSpeaking={isSpeaking} avatarId={avatarId} audioLevel={audioLevel} isRestricted={usageStatus.isRestricted} />
               </motion.button>
             ) : (
-              <AnimatedCharacter status={status} isSpeaking={isSpeaking} avatarId={avatarId} audioLevel={audioLevel} />
+              <AnimatedCharacter status={status} isSpeaking={isSpeaking} avatarId={avatarId} audioLevel={audioLevel} isRestricted={usageStatus.isRestricted} />
             )}
           </div>
         </div>
