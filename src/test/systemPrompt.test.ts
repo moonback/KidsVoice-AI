@@ -43,5 +43,39 @@ describe('systemPrompt', () => {
       expect(prompt).toContain('BIEN-ÊTRE');
       expect(prompt).toContain('pause');
     });
+
+    it('should include date and time context', () => {
+      const prompt = buildSystemPrompt('robot', 'Marie');
+      
+      // Should contain temporal context section
+      expect(prompt).toContain('CONTEXTE TEMPOREL');
+      
+      // Should contain current date elements
+      const now = new Date();
+      const year = now.getFullYear();
+      expect(prompt).toContain(year.toString());
+      
+      // Should contain time of day guidance
+      expect(prompt).toMatch(/matin|après-midi|soirée|nuit/);
+      expect(prompt).toMatch(/Bonjour|Bon après-midi|Bonsoir|Bonne nuit/);
+    });
+
+    it('should adapt greeting based on time of day', () => {
+      const prompt = buildSystemPrompt('robot', 'Marie');
+      const now = new Date();
+      const hours = now.getHours();
+      
+      if (hours >= 5 && hours < 12) {
+        expect(prompt).toContain('Bonjour');
+        expect(prompt).toContain('matin');
+      } else if (hours >= 12 && hours < 18) {
+        expect(prompt).toContain('après-midi');
+      } else if (hours >= 18 && hours < 22) {
+        expect(prompt).toContain('Bonsoir');
+        expect(prompt).toContain('soirée');
+      } else {
+        expect(prompt).toContain('nuit');
+      }
+    });
   });
 });

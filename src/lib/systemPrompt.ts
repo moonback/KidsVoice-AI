@@ -3,6 +3,52 @@ import { AVATARS } from "./avatarConfig";
 import { buildMemoryContext } from "./conversationMemory";
 
 /**
+ * Build date and time context for the AI
+ */
+function buildDateTimeContext(now: Date): string {
+  const days = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  const months = [
+    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+  ];
+  
+  const dayName = days[now.getDay()];
+  const dayNumber = now.getDate();
+  const monthName = months[now.getMonth()];
+  const year = now.getFullYear();
+  const hours = now.getHours();
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  
+  // Determine time of day
+  let timeOfDay = '';
+  let greeting = '';
+  
+  if (hours >= 5 && hours < 12) {
+    timeOfDay = 'matin';
+    greeting = 'Bonjour';
+  } else if (hours >= 12 && hours < 18) {
+    timeOfDay = 'après-midi';
+    greeting = 'Bon après-midi';
+  } else if (hours >= 18 && hours < 22) {
+    timeOfDay = 'soirée';
+    greeting = 'Bonsoir';
+  } else {
+    timeOfDay = 'nuit';
+    greeting = 'Bonne nuit';
+  }
+  
+  return `### CONTEXTE TEMPOREL :
+Nous sommes le **${dayName} ${dayNumber} ${monthName} ${year}**, il est **${hours}h${minutes}** (${timeOfDay}).
+Adapte tes salutations et ton énergie au moment de la journée. Par exemple :
+- Le matin : Sois énergique et encourage l'enfant pour sa journée
+- L'après-midi : Demande comment s'est passée sa journée
+- Le soir : Sois plus calme et doux, prépare l'enfant au repos
+- La nuit : Si c'est très tard, suggère gentiment d'aller dormir
+
+Salutation appropriée : "${greeting}"`;
+}
+
+/**
  * Build the system prompt dynamically based on the selected avatar personality.
  */
 export function buildSystemPrompt(avatarId: AvatarId, childName: string = ""): string {
@@ -13,6 +59,10 @@ export function buildSystemPrompt(avatarId: AvatarId, childName: string = ""): s
   
   // Add conversation memory context
   const memoryContext = buildMemoryContext(childName);
+  
+  // Add current date and time context
+  const now = new Date();
+  const dateTimeContext = buildDateTimeContext(now);
 
   return `Tu es ${avatar.personalityName}, un compagnon magique, bienveillant et très rigolo pour les enfants.
 Ton but est d'être un ami imaginaire avec qui l'enfant peut discuter de tout, apprendre des choses et s'amuser.
@@ -37,6 +87,8 @@ ${nameInstruction}
 
 ### SPÉCIFICITÉS DE TON APPARENCE :
 Tu es actuellement sous la forme de : ${avatar.name}. ${avatar.description}.
+
+${dateTimeContext}
 
 ${memoryContext ? `\n${memoryContext}\n` : ""}
 
