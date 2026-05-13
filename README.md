@@ -5,15 +5,16 @@
 [![Gemini](https://img.shields.io/badge/Gemini-Live_API-orange.svg)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **KidsVoice AI** n'est pas qu'un simple chatbot. C'est un compagnon magique, animé et réactif, conçu pour éveiller la curiosité des enfants à travers une interaction vocale naturelle et immersive.
+> **KidsVoice AI** est un compagnon vocal pour enfants : rapide, visuel, ludique et pensé pour une conversation naturelle en temps réel.
 
 ---
 
-## 🌟 L'Expérience Magique
+## 🌟 Objectif du projet
 
-L'application transforme l'IA en un ami imaginaire tangible. Grâce à l'intégration de **Gemini Live API**, KidsVoice offre une latence ultra-faible permettant une véritable conversation fluide, sans interruption manuelle.
+L’application transforme l’IA en ami imaginaire interactif grâce à la voix.  
+Le focus produit actuel est clair : **améliorer la qualité vocale** (stabilité micro, fluidité, latence, expressivité, confort d’écoute, sécurité enfant).
 
-### 🎭 Compagnons Uniques
+### 🎭 Compagnons disponibles
 Choisissez parmi une sélection d'avatars animés, chacun possédant sa propre personnalité et son univers visuel :
 - **Robot Cool** 🤖 : High-tech, logique et fasciné par les gadgets.
 - **Maysson le Renard** 🦊 : Malin, protecteur et amoureux de la nature.
@@ -21,27 +22,56 @@ Choisissez parmi une sélection d'avatars animés, chacun possédant sa propre p
 - **Drago le Dragon** 🐲 : Courageux, drôle et amateur de trésors cachés.
 - **Mistigri l'Espace** 🐱 : Un chat cosmique explorateur de galaxies lointaines.
 
-### 🔊 Réactivité Sonore Dynamique
-Le moteur d'animation est couplé au flux audio en temps réel. Les avatars ne font pas que parler ; ils **réagissent** au volume de la voix de l'enfant (pupilles qui se dilatent, ailes qui battent plus vite, halo lumineux qui pulse).
+### 🔊 Réactivité sonore dynamique
+Le moteur d’animation est couplé au flux audio en temps réel :
+- halo, yeux, ailes et expressions réagissent au niveau RMS micro ;
+- animations pilotées par l’intensité vocale ;
+- transitions fluides via Motion.
 
-### 👤 Personnalisation Locale
-- **Mémoire du prénom** : L'IA s'adresse directement à l'enfant pour une relation plus intime.
-- **Persistance** : Les préférences d'avatar et le prénom sont sauvegardés localement (Privacy by design).
+### 👤 Personnalisation locale
+- **Mémoire du prénom** : l’IA personnalise la conversation.
+- **Persistance locale** : avatar + prénom sauvegardés dans le navigateur.
 
 ---
 
-## 🛠️ Excellence Technique
+## 🛠️ Stack & architecture
 
-### Stack Moderne
-- **Core** : React 19 + TypeScript (Typage strict pour une robustesse maximale).
-- **Style** : Tailwind CSS v4 + Motion (Animations 60fps optimisées).
-- **Moteur IA** : Google GenAI SDK avec streaming PCM 16-bit bidirectionnel.
-- **Architecture Mobile-Ready** : Logique audio abstraite via des interfaces (`IAudioRecorder`, `IAudioPlayer`) facilitant le portage vers React Native.
+### Stack
+- **Frontend** : React 19 + TypeScript + Vite.
+- **UI/Animation** : Tailwind CSS v4 + Motion.
+- **IA Temps Réel** : Google GenAI Live API (audio bidirectionnel PCM).
+- **Audio** : pipeline local micro/lecture avec interfaces `IAudioRecorder` / `IAudioPlayer`.
 
-### Structure du Code
+### Structure du code
 - `src/lib/AudioService.ts` : Couche d'abstraction pour le multi-plateforme.
 - `src/components/avatars/` : Système modulaire d'avatars SVG animés.
 - `src/lib/systemPrompt.ts` : Générateur dynamique de personnalité injectant le contexte utilisateur.
+- `src/lib/usageLimits.ts` : Gestion de limites d’usage.
+- `src/App.tsx` : Orchestration session live, UI principale, état global.
+
+---
+
+## 🎯 Priorité actuelle : amélioration du niveau vocal
+
+Cette version du projet se concentre sur la **qualité d’expérience vocale** :
+
+1. **Stabilité micro**
+   - normalisation des niveaux audio ;
+   - protection contre les valeurs invalides.
+2. **Réduction de latence**
+   - flux live optimisé ;
+   - démarrage/arrêt de session plus fiable.
+3. **Qualité perçue**
+   - voix plus douce ;
+   - prosodie plus naturelle ;
+   - meilleure gestion des interruptions.
+4. **Confort enfant**
+   - volume de sortie cohérent ;
+   - réponses courtes et claires ;
+   - ton rassurant.
+5. **Sécurité**
+   - garde-fous conversationnels ;
+   - limitation des usages prolongés.
 
 ---
 
@@ -68,14 +98,14 @@ Le moteur d'animation est couplé au flux audio en temps réel. Les avatars ne f
 
 ## 🛡️ Sécurité & Confidentialité
 
-- **Zéro Stockage Serveur** : Toutes les données de personnalisation restent dans le navigateur de l'utilisateur.
-- **Filtres de Sécurité** : Le prompt système est rigoureusement conçu pour éviter les sujets sensibles et protéger l'innocence de l'enfant.
-- **Pas d'infos privées** : L'IA est instruite pour ne jamais demander de données sensibles (adresse, nom de famille).
+- **Zéro stockage serveur des préférences** : données enfant conservées localement.
+- **Prompt de sécurité** : restrictions sur sujets sensibles.
+- **Respect de la vie privée** : ne pas demander d’informations personnelles.
 
 ---
 
-## 🗺️ Vision & Futur
-Consultez notre [ROADMAP.md](ROADMAP.md) pour découvrir les prochaines étapes, incluant l'intégration de la vision (Gemini Multimodal) et le déploiement sur les stores mobiles.
+## 🗺️ Roadmap
+Consultez [ROADMAP.md](ROADMAP.md) pour suivre le plan d’amélioration, avec un accent immédiat sur la **voix** (qualité, expressivité, robustesse).
 
 ---
 *Développé avec ❤️ pour la prochaine génération d'explorateurs.*
