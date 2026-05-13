@@ -77,5 +77,5 @@ export function getRemainingMinutes(): number {
   let usage = storedData ? JSON.parse(storedData) : { date: today, minutes: 0 };
   
   if (usage.date !== today) return DAILY_LIMIT_MINUTES;
-  return Math.max(0, DAILY_LIMIT_MINUTES - usage.minutes);
+  return Math.max(0, Math.floor(DAILY_LIMIT_MINUTES - usage.minutes));
 }
