@@ -16,6 +16,8 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState("");
   const [avatarId, setAvatarId] = useState<AvatarId>(loadSavedAvatar);
   const [childName, setChildName] = useState(loadChildName());
+  const [childAge, setChildAge] = useState(localStorage.getItem("childAge") || "");
+  const [showWelcomeModal, setShowWelcomeModal] = useState(!loadChildName());
   const [audioLevel, setAudioLevel] = useState(0);
   const [usageStatus, setUsageStatus] = useState<UsageStatus>(getUsageStatus());
   const audioLevelRef = useRef(0);
@@ -208,8 +210,103 @@ export default function App() {
     if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
   };
 
+  const handleWelcomeSubmit = (name: string, age: string) => {
+    setChildName(name);
+    setChildAge(age);
+    saveChildName(name);
+    localStorage.setItem("childAge", age);
+    setShowWelcomeModal(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#020408] text-white flex flex-col font-sans relative overflow-hidden">
+      {/* Welcome Modal */}
+      <AnimatePresence>
+        {showWelcomeModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-[32px] p-8 md:p-12 shadow-2xl max-w-md w-full mx-4"
+              style={{ boxShadow: `0 20px 60px ${avatar.colors[0]}33` }}
+            >
+              <div className="text-center mb-8">
+                <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${avatar.accentClass} flex items-center justify-center shadow-lg`}>
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold mb-2" style={{ color: avatar.colors[0] }}>
+                  Bienvenue ! 🎉
+                </h2>
+                <p className="text-slate-400 text-sm">
+                  Dis-moi qui tu es pour commencer l'aventure
+                </p>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const name = formData.get("name") as string;
+                  const age = formData.get("age") as string;
+                  if (name && age) {
+                    handleWelcomeSubmit(name, age);
+                  }
+                }}
+                className="space-y-6"
+              >
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
+                    Ton prénom
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    autoFocus
+                    placeholder="Ex: Marie"
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-slate-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="age" className="block text-sm font-medium text-slate-300 mb-2">
+                    Ton âge
+                  </label>
+                  <input
+                    type="number"
+                    id="age"
+                    name="age"
+                    required
+                    min="3"
+                    max="18"
+                    placeholder="Ex: 8"
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-2xl text-white placeholder:text-slate-500 focus:outline-none focus:border-slate-500 transition-colors"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-4 bg-gradient-to-r font-bold text-lg rounded-2xl shadow-xl hover:scale-105 transition-transform"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${avatar.colors[0]}, ${avatar.colors[1]})`,
+                    boxShadow: `0 10px 30px ${avatar.colors[0]}44`
+                  }}
+                >
+                  Commencer ! 🚀
+                </button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Background Atmosphere — colors adapt to avatar */}
       <div className="absolute inset-0 pointer-events-none">
         <div className={`absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full ${avatar.atmosphereColors[0]} blur-[120px]`}></div>
