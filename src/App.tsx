@@ -11,6 +11,7 @@ import { CompactTimeWidget } from "./components/CompactTimeWidget";
 import { TimeRemainingWidget } from "./components/TimeRemainingWidget";
 import { AVATARS, loadSavedAvatar, loadChildName, saveChildName, type AvatarId } from "./lib/avatarConfig";
 import { getUsageStatus, trackUsage, type UsageStatus } from "./lib/usageLimits";
+import { addConversationTurn, clearConversationHistory, getConversationStats } from "./lib/conversationMemory";
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "connecting" | "listening">("idle");
@@ -23,6 +24,8 @@ export default function App() {
   const [showTimeWidget, setShowTimeWidget] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
   const [usageStatus, setUsageStatus] = useState<UsageStatus>(getUsageStatus());
+  const [currentTranscript, setCurrentTranscript] = useState<string>("");
+  const [showMemoryModal, setShowMemoryModal] = useState(false);
   const audioLevelRef = useRef(0);
   const rafRef = useRef<number | null>(null);
 
@@ -145,9 +148,35 @@ export default function App() {
             },
             onmessage: (message: any) => {
               console.log("📨 Message reçu:", message);
+              
+              // Capture transcript from user (if available)
+              const userTranscript = message.serverContent?.turnComplete;
+              if (userTranscript && childName) {
+                const userText = message.serverContent?.modelTurn?.parts?.find(
+                  (p: any) => p.text
+                )?.text;
+                if (userText) {
+                  setCurrentTranscript(userText);
+                }
+              }
+              
               const base64Audio =
                 message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
               if (base64Audio) {
+                // Capture AI response text if available
+                const aiText = message.serverContent?.modelTurn?.parts?.find(
+                  (p: any) => p.text
+                )?.text;
+                
+                if (aiText && childName) {
+                  // Save the conversation turn
+                  if (currentTranscript) {
+                    addConversationTurn(childName, "child", currentTranscript);
+                    setCurrentTranscript("");
+                  }
+                  addConversationTurn(childName, "companion", aiText);
+                }
+                
                 audioPlayer.current?.play(base64Audio);
                 setIsSpeaking(true);
                 if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
@@ -252,6 +281,16 @@ export default function App() {
     setShowWelcomeModal(false);
   };
 
+  const handleClearMemory = () => {
+    if (window.confirm("Êtes-vous sûr de vouloir effacer toute la mémoire des conversations ? Cette action est irréversible.")) {
+      clearConversationHistory();
+      setShowMemoryModal(false);
+      alert("La mémoire a été effacée avec succès !");
+    }
+  };
+
+  const conversationStats = childName ? getConversationStats(childName) : null;
+
   return (
     <div className="min-h-screen bg-[#020408] text-white flex flex-col font-sans relative overflow-hidden">
       {/* Welcome Modal */}
@@ -344,6 +383,87 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Memory Modal */}
+      <AnimatePresence>
+        {showMemoryModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowMemoryModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-[28px] sm:rounded-[32px] p-5 sm:p-8 md:p-12 shadow-2xl max-w-md w-full mx-4"
+              style={{ boxShadow: `0 20px 60px ${avatar.colors[0]}33` }}
+            >
+              <div className="text-center mb-6">
+                <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${avatar.accentClass} flex items-center justify-center shadow-lg`}>
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: avatar.colors[0] }}>
+                  Mémoire du Compagnon 🧠
+                </h2>
+                <p className="text-slate-400 text-sm">
+                  Statistiques des conversations
+                </p>
+              </div>
+
+              {conversationStats && (
+                <div className="space-y-4 mb-6">
+                  <div className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50">
+                    <div className="text-sm text-slate-400 mb-1">Sessions totales</div>
+                    <div className="text-2xl font-bold" style={{ color: avatar.colors[0] }}>
+                      {conversationStats.totalSessions}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50">
+                    <div className="text-sm text-slate-400 mb-1">Échanges totaux</div>
+                    <div className="text-2xl font-bold" style={{ color: avatar.colors[0] }}>
+                      {conversationStats.totalTurns}
+                    </div>
+                  </div>
+                  
+                  {conversationStats.lastConversationDate && (
+                    <div className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50">
+                      <div className="text-sm text-slate-400 mb-1">Dernière conversation</div>
+                      <div className="text-lg font-medium text-slate-200">
+                        {conversationStats.lastConversationDate.toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <button
+                  onClick={handleClearMemory}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 font-bold text-base rounded-2xl shadow-xl hover:scale-105 transition-transform"
+                >
+                  Effacer la mémoire 🗑️
+                </button>
+                
+                <button
+                  onClick={() => setShowMemoryModal(false)}
+                  className="w-full py-3 bg-slate-700 hover:bg-slate-600 font-medium text-base rounded-2xl transition-colors"
+                >
+                  Fermer
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Background Atmosphere — colors adapt to avatar */}
       <div className="absolute inset-0 pointer-events-none">
         <div className={`absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full ${avatar.atmosphereColors[0]} blur-[120px]`}></div>
@@ -417,6 +537,18 @@ export default function App() {
             <div className={`w-2 h-2 rounded-full ${usageStatus.isRestricted ? "bg-amber-400" : "bg-green-400"}`}></div>
             <span>{usageStatus.isRestricted ? "Mode Repos" : "En ligne"}</span>
           </div>
+          
+          {/* Memory Button - Only visible when idle and child name is set */}
+          {status === "idle" && childName && (
+            <button
+              onClick={() => setShowMemoryModal(true)}
+              className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-slate-700/50 hover:border-slate-500 transition-colors"
+              title="Voir la mémoire du compagnon"
+            >
+              <span>🧠</span>
+              <span className="hidden sm:inline">Mémoire</span>
+            </button>
+          )}
         </div>
       </nav>
 

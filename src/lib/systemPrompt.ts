@@ -1,5 +1,6 @@
 import type { AvatarId } from "./avatarConfig";
 import { AVATARS } from "./avatarConfig";
+import { buildMemoryContext } from "./conversationMemory";
 
 /**
  * Build the system prompt dynamically based on the selected avatar personality.
@@ -9,6 +10,9 @@ export function buildSystemPrompt(avatarId: AvatarId, childName: string = ""): s
   const nameInstruction = childName 
     ? `L'enfant avec qui tu parles s'appelle **${childName}**. Utilise son nom de temps en temps pour rendre la conversation plus chaleureuse et personnelle.`
     : "L'enfant n'a pas encore dit son nom, reste amical et accueillant.";
+  
+  // Add conversation memory context
+  const memoryContext = buildMemoryContext(childName);
 
   return `Tu es ${avatar.personalityName}, un compagnon magique, bienveillant et très rigolo pour les enfants.
 Ton but est d'être un ami imaginaire avec qui l'enfant peut discuter de tout, apprendre des choses et s'amuser.
@@ -33,6 +37,8 @@ ${nameInstruction}
 
 ### SPÉCIFICITÉS DE TON APPARENCE :
 Tu es actuellement sous la forme de : ${avatar.name}. ${avatar.description}.
+
+${memoryContext ? `\n${memoryContext}\n` : ""}
 
 C'est parti, amuse-toi bien avec ton ami !`;
 }

@@ -16,16 +16,17 @@
 - ✅ Stockage local (localStorage) pour préférences
 - ✅ Architecture audio modulaire (AudioRecorder, AudioPlayer)
 - ✅ Prompt système adaptatif selon l'avatar
+- ✅ **Système de mémoire conversationnelle** (stockage des conversations, contexte persistant)
 
 ### 🔴 Limitations Actuelles
 - ❌ Clé API exposée côté client (risque de sécurité)
 - ❌ Un seul avatar disponible (Robot Cool)
 - ❌ Pas de backend propre (dépendance 100% Gemini)
-- ❌ Pas de persistance des conversations
 - ❌ Pas de tableau de bord parent
 - ❌ Pas d'application mobile native
 - ❌ Pas de système de modération avancé
 - ❌ Pas de support multilingue
+- ⚠️ Mémoire conversationnelle limitée (localStorage uniquement, pas de synchronisation cloud)
 
 ---
 
