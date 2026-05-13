@@ -1,5 +1,5 @@
 import { GoogleGenAI, Modality } from "@google/genai";
-import { Mic, Square, Sparkles, Loader2, Palette } from "lucide-react";
+import { Square, Sparkles } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AudioRecorder } from "./lib/AudioRecorder";
@@ -7,16 +7,14 @@ import { AudioPlayer } from "./lib/AudioPlayer";
 import { IAudioRecorder, IAudioPlayer } from "./lib/AudioService";
 import { buildSystemPrompt } from "./lib/systemPrompt";
 import { AnimatedCharacter } from "./components/AnimatedCharacter";
-import { AvatarSelector } from "./components/AvatarSelector";
-import { AVATARS, loadSavedAvatar, saveAvatar, loadChildName, saveChildName, type AvatarId } from "./lib/avatarConfig";
-import { getUsageStatus, trackUsage, getRemainingMinutes, type UsageStatus } from "./lib/usageLimits";
+import { AVATARS, loadSavedAvatar, loadChildName, saveChildName, type AvatarId } from "./lib/avatarConfig";
+import { getUsageStatus, trackUsage, type UsageStatus } from "./lib/usageLimits";
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "connecting" | "listening">("idle");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [avatarId, setAvatarId] = useState<AvatarId>(loadSavedAvatar);
-  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [childName, setChildName] = useState(loadChildName());
   const [audioLevel, setAudioLevel] = useState(0);
   const [usageStatus, setUsageStatus] = useState<UsageStatus>(getUsageStatus());
@@ -72,13 +70,6 @@ export default function App() {
     return () => clearInterval(timer);
   }, [status, isSpeaking]);
 
-  /** Handle avatar selection — persist and update state */
-  const handleAvatarSelect = (id: AvatarId) => {
-    setAvatarId(id);
-    saveAvatar(id);
-    setShowAvatarSelector(false);
-  };
-
   const startSession = async () => {
     const statusCheck = getUsageStatus();
     if (statusCheck.isRestricted) {
@@ -106,12 +97,7 @@ export default function App() {
       // Stop the test stream immediately
       stream.getTracks().forEach(track => track.stop());
       
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error("Clé API Gemini manquante. Définis VITE_GEMINI_API_KEY (ou GEMINI_API_KEY en AI Studio).");
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
       audioPlayer.current?.clearQueue();
 
       console.log("📡 Connexion à Gemini Live...");
@@ -287,22 +273,6 @@ export default function App() {
               )}
             </div>
           )}
-          {/* Avatar Selector Button — only when idle */}
-          {status === "idle" && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowAvatarSelector(true)}
-              className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/80 transition-all cursor-pointer"
-              title="Changer de compagnon"
-            >
-              <span className="text-base">{avatar.emoji}</span>
-              <span className="hidden sm:inline">{avatar.name}</span>
-              <Palette className="w-4 h-4 text-slate-500" />
-            </motion.button>
-          )}
           <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700/50">
             <div className={`w-2 h-2 rounded-full ${usageStatus.isRestricted ? "bg-amber-400" : "bg-green-400"}`}></div>
             <span>{usageStatus.isRestricted ? "Mode Repos" : "En ligne"}</span>
@@ -331,14 +301,6 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Avatar Selector Modal */}
-      <AvatarSelector
-        isOpen={showAvatarSelector}
-        currentAvatar={avatarId}
-        onSelect={handleAvatarSelect}
-        onClose={() => setShowAvatarSelector(false)}
-      />
 
       {/* Main Interaction Area */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 md:px-20">
