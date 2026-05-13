@@ -5,6 +5,7 @@ export class AudioRecorder implements IAudioRecorder {
   private audioContext: AudioContext | null = null;
   private workletNode: AudioWorkletNode | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
+  private isRecording = false;
 
   async start(
     onAudioData: (base64Data: string) => void,
@@ -20,10 +21,14 @@ export class AudioRecorder implements IAudioRecorder {
       });
 
       this.audioContext = new AudioContext({ sampleRate: 16000 });
-      this.source = this.audioContext.createMediaStreamSource(this.stream);
+      this.isRecording = true;
+      const context = this.audioContext;
+      this.source = context.createMediaStreamSource(this.stream);
 
-      await this.audioContext.audioWorklet.addModule("/audio-recorder-processor.js");
-      this.workletNode = new AudioWorkletNode(this.audioContext, "audio-recorder-processor");
+      await context.audioWorklet.addModule("/audio-recorder-processor.js");
+      if (!this.isRecording || this.audioContext !== context) return;
+
+      this.workletNode = new AudioWorkletNode(context, "audio-recorder-processor");
 
       this.workletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
         const inputData = event.data;
@@ -45,7 +50,7 @@ export class AudioRecorder implements IAudioRecorder {
       };
 
       this.source.connect(this.workletNode);
-      this.workletNode.connect(this.audioContext.destination);
+      this.workletNode.connect(context.destination);
     } catch (error) {
       console.error("Error starting audio recording:", error);
       throw error;
@@ -53,6 +58,7 @@ export class AudioRecorder implements IAudioRecorder {
   }
 
   stop() {
+    this.isRecording = false;
     if (this.workletNode) {
       this.workletNode.disconnect();
       this.workletNode.port.onmessage = null;
