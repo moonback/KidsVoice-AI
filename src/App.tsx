@@ -106,7 +106,12 @@ export default function App() {
       // Stop the test stream immediately
       stream.getTracks().forEach(track => track.stop());
       
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("Clé API Gemini manquante. Définis VITE_GEMINI_API_KEY (ou GEMINI_API_KEY en AI Studio).");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       audioPlayer.current?.clearQueue();
 
       console.log("📡 Connexion à Gemini Live...");
