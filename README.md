@@ -1,97 +1,81 @@
 # KidsVoice AI 🎙️✨
 
-> Un assistant vocal interactif, ludique et en temps réel conçu spécialement pour les enfants.
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
+[![Tailwind](https://img.shields.io/badge/Tailwind-v4-38B2AC.svg)](https://tailwindcss.com/)
+[![Gemini](https://img.shields.io/badge/Gemini-Live_API-orange.svg)](https://ai.google.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-KidsVoice AI exploite la puissance de l'API **Gemini Live** pour offrir une expérience conversationnelle fluide et naturelle. Les enfants peuvent poser leurs questions à voix haute (comment se forment les nuages, pourquoi le ciel est bleu, etc.), et un personnage magique animé leur répond instantanément.
+> **KidsVoice AI** n'est pas qu'un simple chatbot. C'est un compagnon magique, animé et réactif, conçu pour éveiller la curiosité des enfants à travers une interaction vocale naturelle et immersive.
 
-## 🛠️ Stack Technique
+---
 
-- **Frontend** : React 19, TypeScript, Vite
-- **Styling** : Tailwind CSS v4
-- **Animations** : Motion (anciennement Framer Motion)
-- **Icônes** : Lucide React
-- **IA & Logique** : Google GenAI SDK (`@google/genai`)
-- **Audio Processing** : Web Audio API native (Capture via `getUserMedia`, Lecture via `AudioContext`)
+## 🌟 L'Expérience Magique
 
-## ✨ Fonctionnalités principales (MVP)
+L'application transforme l'IA en un ami imaginaire tangible. Grâce à l'intégration de **Gemini Live API**, KidsVoice offre une latence ultra-faible permettant une véritable conversation fluide, sans interruption manuelle.
 
-- 🎙️ **Streaming Vocal Bidirectionnel** : Communication temps réel voix-à-voix avec le modèle `gemini-3.1-flash-live-preview`.
-- 👾 **Personnage Animé Réactif** : Un compagnon SVG qui cligne des yeux, bouge et s'anime lorsqu'il parle ou écoute.
-- 🎨 **Interface Immersive** : Design "Immersive UI" avec des effets de halo lumineux, des gradients profonds et des retours visuels clairs.
-- ⚙️ **Prompt Personnalisable** : Le comportement de l'IA est facilement modifiable via un fichier système dédié (`systemPrompt.ts`).
-- 🔒 **Privacy-first** : L'audio est traité en temps réel et directement envoyé à l'API de Google, sans stockage intermédiaire.
+### 🎭 Compagnons Uniques
+Choisissez parmi une sélection d'avatars animés, chacun possédant sa propre personnalité et son univers visuel :
+- **Robot Cool** 🤖 : High-tech, logique et fasciné par les gadgets.
+- **Maysson le Renard** 🦊 : Malin, protecteur et amoureux de la nature.
+- **Leanna la Fée** 🧚 : Douce, chantante et experte en poussière d'étoiles.
+- **Drago le Dragon** 🐲 : Courageux, drôle et amateur de trésors cachés.
+- **Mistigri l'Espace** 🐱 : Un chat cosmique explorateur de galaxies lointaines.
 
-## 📦 Installation et Lancement
+### 🔊 Réactivité Sonore Dynamique
+Le moteur d'animation est couplé au flux audio en temps réel. Les avatars ne font pas que parler ; ils **réagissent** au volume de la voix de l'enfant (pupilles qui se dilatent, ailes qui battent plus vite, halo lumineux qui pulse).
 
-### Prérequis
-- **Node.js** (v18 ou supérieur)
-- Git
-- Une clé **API Google Gemini** valide.
+### 👤 Personnalisation Locale
+- **Mémoire du prénom** : L'IA s'adresse directement à l'enfant pour une relation plus intime.
+- **Persistance** : Les préférences d'avatar et le prénom sont sauvegardés localement (Privacy by design).
 
-### Étape par étape
+---
 
-1. **Cloner le dépôt**
+## 🛠️ Excellence Technique
+
+### Stack Moderne
+- **Core** : React 19 + TypeScript (Typage strict pour une robustesse maximale).
+- **Style** : Tailwind CSS v4 + Motion (Animations 60fps optimisées).
+- **Moteur IA** : Google GenAI SDK avec streaming PCM 16-bit bidirectionnel.
+- **Architecture Mobile-Ready** : Logique audio abstraite via des interfaces (`IAudioRecorder`, `IAudioPlayer`) facilitant le portage vers React Native.
+
+### Structure du Code
+- `src/lib/AudioService.ts` : Couche d'abstraction pour le multi-plateforme.
+- `src/components/avatars/` : Système modulaire d'avatars SVG animés.
+- `src/lib/systemPrompt.ts` : Générateur dynamique de personnalité injectant le contexte utilisateur.
+
+---
+
+## 🚀 Installation Rapide
+
+1. **Clonage & Installation**
    ```bash
    git clone https://github.com/votre-username/kidsvoice-ai.git
-   cd kidsvoice-ai
-   ```
-
-2. **Installer les dépendances**
-   ```bash
    npm install
    ```
 
-3. **Configurer les variables d'environnement**
-   Copiez le fichier d'exemple et ajoutez votre clé API.
-   ```bash
-   cp .env.example .env
+2. **Configuration**
+   Créez un fichier `.env` à la racine :
+   ```env
+   VITE_GEMINI_API_KEY=votre_cle_gemini_ici
    ```
-   *Ouvrez le fichier `.env` et définissez `GEMINI_API_KEY="votre-cle-secrete"`.*
 
-4. **Lancer le serveur de développement**
+3. **Décollage**
    ```bash
    npm run dev
    ```
-   L'application sera accessible sur `http://localhost:3000`.
 
-### Mode Production
-Pour builder l'application pour la production :
-```bash
-npm run build
-npm run preview
-```
+---
 
-## 📁 Structure du Projet
+## 🛡️ Sécurité & Confidentialité
 
-```text
-/
-├── public/                 # Assets statiques
-├── src/
-│   ├── components/         # Composants React réutilisables (ex: AnimatedCharacter)
-│   ├── lib/                # Logique métier et utilitaires
-│   │   ├── AudioPlayer.ts  # Gestion de la lecture audio (Base64 -> PCM -> AudioContext)
-│   │   ├── AudioRecorder.ts# Capture du microphone (Stream -> PCM 16-bit -> Base64)
-│   │   └── systemPrompt.ts # Prompt de configuration de l'IA
-│   ├── App.tsx             # Composant racine, interface principale et logique de session API
-│   ├── index.css           # Fichier CSS global (Tailwind)
-│   └── main.tsx            # Point d'entrée de l'application React
-├── .cursorrules            # Règles pour les assistants IA (Cursor/Copilot)
-├── package.json            # Dépendances et scripts
-└── vite.config.ts          # Configuration du bundler
-```
+- **Zéro Stockage Serveur** : Toutes les données de personnalisation restent dans le navigateur de l'utilisateur.
+- **Filtres de Sécurité** : Le prompt système est rigoureusement conçu pour éviter les sujets sensibles et protéger l'innocence de l'enfant.
+- **Pas d'infos privées** : L'IA est instruite pour ne jamais demander de données sensibles (adresse, nom de famille).
 
-## 🔐 Variables d'Environnement
+---
 
-L'application requiert les variables suivantes dans un fichier `.env` :
+## 🗺️ Vision & Futur
+Consultez notre [ROADMAP.md](ROADMAP.md) pour découvrir les prochaines étapes, incluant l'intégration de la vision (Gemini Multimodal) et le déploiement sur les stores mobiles.
 
-- `GEMINI_API_KEY` : Clé secrète pour communiquer avec l'API Google Gemini. **Ne la publiez jamais publiquement.** *Note : En production client-side pur, cette architecture est pour des démos/projets internes. Pour un projet grand public, l'appel doit passer par un backend proxy.*
-
-## 🤝 Bonnes pratiques pour contribuer
-
-1. **Créer une branche par fonctionnalité** (`feat/nom-de-la-feature`, `fix/nom-du-bug`).
-2. **Utiliser TypeScript strictement** : Éviter les types `any`, typifier les props et les retours de fonctions.
-3. **Composants isolés** : Garder une logique par composant.
-4. **Style conditionnel** : Utiliser Tailwind pour les classes et Framer Motion `motion.div` pour les animations complexes.
-
-## 📄 Licence
-Ce projet est sous licence **MIT**. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+---
+*Développé avec ❤️ pour la prochaine génération d'explorateurs.*

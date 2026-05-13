@@ -1,45 +1,56 @@
-# ROADMAP 🛤️
+# 🛤️ KidsVoice AI - Vision & Roadmap
 
-Ce document présente la vision produit de **KidsVoice AI** et détaille le chemin du MVP aux futures implémentations.
-
-## 🟢 Étape 1 : Le MVP (Current State)
-*Statut : **En production (Terminé)***
-
-- [x] Application SPA sous React / Vite / TailwindCSS.
-- [x] Personnage SVG interactif (idle, listening, connecting, speaking).
-- [x] Cœur magique Temps Réel (Gemini Live API).
-- [x] Enregistrement et restitution audio en Base64 stream continu.
-- [x] Fichier `systemPrompt.ts` externalisé pour l'édition de la personnalité IA.
-- [x] Gestion des interruptions intelligentes (Barge-in de Gemini).
+Ce document définit les jalons stratégiques pour transformer KidsVoice AI d'un MVP en une plateforme pédagogique et ludique complète.
 
 ---
 
-## 🟡 Étape 2 : Version 1 - Backend sécurisé et Profils Multiples
-*Statut : **Prochaine étape***
+## 🟢 Phase 1 : Fondations & Immersion (Terminé ✅)
+*Objectif : Créer une expérience stable, engageante et sécurisée.*
 
-- [ ] **Proxy Serveur / BFF (Backend for Frontend)** : Migration de la logique Google API vers un backend Express ou un serverless function (Vercel/Supabase Functions) pour **cacher la clé API Gemini**.
-- [ ] **Supabase Auth** : Intégration de l'authentification (Google OAuth ou PIN) pour que chaque enfant ait un espace fermé.
-- [x] **Personnalisation locale de l'UI** : Possibilité de choisir entre plusieurs Avatars (Robot, Renard, Fée, Dragon, Chat).
-- [ ] **Sélecteur de niveau** : Ajustement automatique du prompt système en fonction de l'âge déclaré de l'enfant (ex: 4-6 ans vs 8-10 ans).
-
----
-
-## 🟠 Étape 3 : Version 2 - Mémoire et Dashboard Parental
-*Statut : **Planifié***
-
-- [ ] **Mémoire BDD temporelle** : Sauvegarde facultative des sessions dans Supabase via text-transcript (pour assurer un suivi des centres d'intérêt de l'enfant : "Tu m'as dit hier que tu aimais les trains...").
-- [ ] **Dashboard Sécurisé (Parent)** : 
-  - Visualisation des statistiques d'usage (temps passé).
-  - Accès aux résumés (transcription texte optionnelle et sécurisée) des questions posées pour suivre les apprentissages et la curiosité de l'enfant.
-- [ ] **Filtres Thématiques** : Restreindre les discussions à certains thèmes (Sciences, Histoire, Apprentissage pur).
+- [x] **Moteur Temps Réel** : Intégration de Gemini Live API (latence < 1s).
+- [x] **Système d'Avatars** : 5 compagnons uniques avec identités visuelles et verbales.
+- [x] **Réactivité Sonore** : Animations synchronisées avec le volume du micro (RMS).
+- [x] **Personnalisation** : Mémorisation locale du prénom et des préférences.
+- [x] **Architecture Abstraite** : Découplage de la logique audio pour le multi-plateforme.
 
 ---
 
-## 🟣 Étape 4 : Version 3 - Intégrations Pédagogiques
-*Statut : **En cours de réflexion***
+## 🟡 Phase 2 : Intelligence & Sécurité (En cours 🏗️)
+*Objectif : Sécuriser l'infrastructure et affiner la pertinence pédagogique.*
 
-- [ ] **Intégration d'outils (Tool Calling)** : Permettre à KidsVoice de déclencher des appels API externes (ex: récupérer la vraie météo locale, lire une histoire générée à la volée avec des sons ambiants FX).
-- [ ] **Mode Apprentissage de Langue** : Configuration pour discuter et pratiquer une nouvelle langue étrangère à travers un jeu de rôle interactif.
-- [/] **Application Mobile (React Native)** : 
-    - [x] Abstraction de la logique Audio (Interfaces partagées).
-    - [ ] Implémentation native (iOS/Android).
+- [ ] **BFF (Backend for Frontend)** : Serveur proxy (Express/Node) pour masquer la clé API et gérer les quotas.
+- [ ] **Sélecteur de Niveau Cognitif** : Adaptation dynamique du vocabulaire et de la complexité des réponses selon l'âge (4-6 ans, 7-9 ans, 10+).
+- [ ] **Mode Nuit / Temps de Repos** : Limitation d'usage pour encourager l'enfant à faire des pauses.
+- [ ] **Optimisation de la Voix** : Exploration de voix plus douces et expressives via les modèles TTS personnalisés.
+
+---
+
+## 🟠 Phase 3 : Vision & Apprentissage (Prochainement 🚀)
+*Objectif : Ajouter de nouvelles dimensions d'interaction et de mémoire.*
+
+- [ ] **Vision Multimodale** : "Montre-moi ton dessin !" — Utiliser la caméra pour que l'avatar puisse commenter et interagir avec l'environnement réel de l'enfant.
+- [ ] **Mémoire Long-Terme** : Utilisation de vecteurs (RAG) pour que l'avatar se souvienne des aventures passées et des goûts de l'enfant au fil des sessions.
+- [ ] **Mode Tutorat** : Activités guidées sur des thèmes spécifiques (apprentissage des langues, initiation aux sciences).
+- [ ] **Tool Calling** : Capacité pour l'avatar de déclencher des effets sonores ou d'ouvrir des "portails magiques" (liens pédagogiques/images).
+
+---
+
+## 🟣 Phase 4 : Écosystème & Dashboard Parental (Futur ✨)
+*Objectif : Donner de la visibilité aux parents et sortir du navigateur.*
+
+- [ ] **Dashboard Parental (Insights)** : 
+  - Cartographie de la curiosité (quels thèmes l'enfant explore-t-il ?).
+  - Résumés hebdomadaires des apprentissages (sans violer la vie privée).
+- [ ] **Application Mobile Native** : Portage final vers iOS/Android via React Native.
+- [ ] **Mode Hors-Ligne (Hybrid)** : Mini-jeux et interactions basiques sans connexion internet.
+- [ ] **Éducation Connectée** : Partenariats avec des plateformes éducatives pour transformer les discussions en exercices ludiques.
+
+---
+
+## 📈 Indicateurs de Succès
+- **Engagement** : Temps moyen passé par session.
+- **Diversité** : Nombre de thèmes pédagogiques abordés.
+- **Confiance** : Satisfaction des parents sur la sécurité des échanges.
+
+---
+> *La roadmap est un document vivant et peut évoluer en fonction des retours de la communauté et des avancées technologiques.*
