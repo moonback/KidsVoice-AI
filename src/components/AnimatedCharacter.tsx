@@ -4,6 +4,8 @@ import { AVATARS } from "../lib/avatarConfig";
 import { RobotAvatar } from "./avatars/RobotAvatar";
 import { FoxAvatar } from "./avatars/FoxAvatar";
 import { FairyAvatar } from "./avatars/FairyAvatar";
+import { DragonAvatar } from "./avatars/DragonAvatar";
+import { CatAvatar } from "./avatars/CatAvatar";
 
 interface Props {
   status: "idle" | "connecting" | "listening";
@@ -38,6 +40,10 @@ export function AnimatedCharacter({ status, isSpeaking, avatarId = "robot" }: Pr
         return <FoxAvatar status={status} isSpeaking={isSpeaking} />;
       case "fairy":
         return <FairyAvatar status={status} isSpeaking={isSpeaking} />;
+      case "dragon":
+        return <DragonAvatar status={status} isSpeaking={isSpeaking} />;
+      case "cat":
+        return <CatAvatar status={status} isSpeaking={isSpeaking} />;
       case "robot":
       default:
         return <RobotAvatar status={status} isSpeaking={isSpeaking} />;

@@ -4,6 +4,8 @@ import { AVATARS, AVATAR_IDS, type AvatarId } from "../lib/avatarConfig";
 import { RobotAvatar } from "./avatars/RobotAvatar";
 import { FoxAvatar } from "./avatars/FoxAvatar";
 import { FairyAvatar } from "./avatars/FairyAvatar";
+import { DragonAvatar } from "./avatars/DragonAvatar";
+import { CatAvatar } from "./avatars/CatAvatar";
 
 interface Props {
   isOpen: boolean;
@@ -22,6 +24,10 @@ function AvatarPreview({ avatarId }: { avatarId: AvatarId }) {
       return <FoxAvatar {...props} />;
     case "fairy":
       return <FairyAvatar {...props} />;
+    case "dragon":
+      return <DragonAvatar {...props} />;
+    case "cat":
+      return <CatAvatar {...props} />;
   }
 }
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AudioRecorder } from "./lib/AudioRecorder";
 import { AudioPlayer } from "./lib/AudioPlayer";
+import { IAudioRecorder, IAudioPlayer } from "./lib/AudioService";
 import { buildSystemPrompt } from "./lib/systemPrompt";
 import { AnimatedCharacter } from "./components/AnimatedCharacter";
 import { AvatarSelector } from "./components/AvatarSelector";
@@ -15,8 +16,8 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState("");
   const [avatarId, setAvatarId] = useState<AvatarId>(loadSavedAvatar);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
-  const audioRecorder = useRef<AudioRecorder | null>(null);
-  const audioPlayer = useRef<AudioPlayer | null>(null);
+  const audioRecorder = useRef<IAudioRecorder | null>(null);
+  const audioPlayer = useRef<IAudioPlayer | null>(null);
   const sessionRef = useRef<any>(null);
   const speakingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 

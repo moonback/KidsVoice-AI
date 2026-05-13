@@ -6,168 +6,105 @@ interface Props {
 }
 
 /**
- * Robot Avatar — the original KidsVoice blob character,
- * extracted into its own avatar component.
+ * Robot Avatar — A more mechanical, high-tech robot 
+ * with metallic textures, LED eyes, and antennas.
  */
 export function RobotAvatar({ status, isSpeaking }: Props) {
   return (
-    <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(129,140,248,0.5)]">
+    <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_30px_rgba(79,70,229,0.4)]">
       <defs>
-        <linearGradient id="robotBodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#94A3B8" />
+          <stop offset="50%" stopColor="#64748B" />
+          <stop offset="100%" stopColor="#475569" />
+        </linearGradient>
+        <linearGradient id="screenGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#1E293B" />
+          <stop offset="100%" stopColor="#0F172A" />
+        </linearGradient>
+        <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#818CF8" />
-          <stop offset="50%" stopColor="#A78BFA" />
-          <stop offset="100%" stopColor="#F472B6" />
-        </linearGradient>
-        <linearGradient id="robotEarGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#F472B6" />
-          <stop offset="100%" stopColor="#A78BFA" />
-        </linearGradient>
+          <stop offset="100%" stopColor="#4F46E5" stopOpacity="0" />
+        </radialGradient>
       </defs>
 
-      {/* Left Ear/Antenna */}
-      <motion.path
-        d="M 50 80 Q 20 40 30 20 Q 40 30 60 60"
-        stroke="url(#robotEarGradient)"
-        strokeWidth="8"
-        strokeLinecap="round"
-        fill="none"
-        animate={{
-          rotate: isSpeaking ? [-5, 5, -5] : status === "listening" ? [0, -10, 0] : 0,
-        }}
-        style={{ transformOrigin: "60px 60px" }}
-        transition={{ duration: isSpeaking ? 0.2 : 2, repeat: Infinity }}
-      />
+      {/* Main Antenna */}
+      <motion.g animate={{ rotate: status === "listening" ? [-2, 2, -2] : 0 }} transition={{ duration: 1, repeat: Infinity }}>
+        <rect x="98" y="10" width="4" height="25" fill="#475569" rx="2" />
+        <motion.circle 
+          cx="100" cy="10" r="5" 
+          fill={status === "connecting" ? "#EF4444" : "#6366F1"} 
+          animate={{ opacity: [1, 0.4, 1] }} 
+          transition={{ duration: 0.8, repeat: Infinity }} 
+        />
+      </motion.g>
 
-      {/* Right Ear/Antenna */}
-      <motion.path
-        d="M 150 80 Q 180 40 170 20 Q 160 30 140 60"
-        stroke="url(#robotEarGradient)"
-        strokeWidth="8"
-        strokeLinecap="round"
-        fill="none"
-        animate={{
-          rotate: isSpeaking ? [5, -5, 5] : status === "listening" ? [0, 10, 0] : 0,
-        }}
-        style={{ transformOrigin: "140px 60px" }}
-        transition={{ duration: isSpeaking ? 0.2 : 2, repeat: Infinity }}
-      />
+      {/* Side Ears/Bolts */}
+      <rect x="25" y="85" width="10" height="30" fill="#475569" rx="4" />
+      <rect x="165" y="85" width="10" height="30" fill="#475569" rx="4" />
 
-      {/* Body */}
-      <motion.path
-        d="M 100 30 C 150 30 170 80 170 140 C 170 180 130 180 100 180 C 70 180 30 180 30 140 C 30 80 50 30 100 30 Z"
-        animate={{
-          d: isSpeaking
-            ? "M 100 20 C 160 20 180 80 180 130 C 180 180 140 190 100 190 C 60 190 20 180 20 130 C 20 80 40 20 100 20 Z"
-            : "M 100 30 C 150 30 170 80 170 140 C 170 180 130 180 100 180 C 70 180 30 180 30 140 C 30 80 50 30 100 30 Z"
-        }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-        fill="url(#robotBodyGradient)"
-      />
+      {/* Head Shell (Rounded Square) */}
+      <rect x="35" y="35" width="130" height="130" rx="30" fill="url(#metalGradient)" />
+      
+      {/* Face Screen */}
+      <rect x="50" y="55" width="100" height="85" rx="15" fill="url(#screenGradient)" stroke="#334155" strokeWidth="2" />
 
-      <g transform="translate(100, 95)">
-        {/* Left Eye outline */}
-        <ellipse cx="-35" cy="0" rx="14" ry="18" fill="white" />
-        {/* Right Eye outline */}
-        <ellipse cx="35" cy="0" rx="14" ry="18" fill="white" />
+      {/* Grid Lines on Screen (LED Matrix effect) */}
+      <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" opacity="0.05" />
+      </pattern>
+      <rect x="50" y="55" width="100" height="85" rx="15" fill="url(#grid)" />
 
-        {/* Pupils & Eye Expressions */}
+      <g transform="translate(100, 90)">
+        {/* LED Eyes */}
         {status === "connecting" ? (
           <g>
-            <path d="M -42 -5 L -28 5 M -28 -5 L -42 5" stroke="#1E1B4B" strokeWidth="4" strokeLinecap="round" />
-            <path d="M 28 -5 L 42 5 M 42 -5 L 28 5" stroke="#1E1B4B" strokeWidth="4" strokeLinecap="round" />
+            <rect x="-35" y="-5" width="20" height="4" fill="#6366F1" rx="2" />
+            <rect x="15" y="-5" width="20" height="4" fill="#6366F1" rx="2" />
           </g>
         ) : (
           <>
-            <motion.circle
-              cx="-35" cy={isSpeaking ? "-2" : "2"} r="7" fill="#1E1B4B"
-              animate={{
-                x: status === "listening" ? [-8, 8, -8] : 0,
-                y: status === "listening" ? [-3, 3, -3] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.circle
-              cx="35" cy={isSpeaking ? "-2" : "2"} r="7" fill="#1E1B4B"
-              animate={{
-                x: status === "listening" ? [-8, 8, -8] : 0,
-                y: status === "listening" ? [-3, 3, -3] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-
-            {/* Highlights */}
-            <motion.circle
-              cx="-38" cy={isSpeaking ? "-5" : "-1"} r="2" fill="white"
-              animate={{
-                x: status === "listening" ? [-8, 8, -8] : 0,
-                y: status === "listening" ? [-3, 3, -3] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.circle
-              cx="32" cy={isSpeaking ? "-5" : "-1"} r="2" fill="white"
-              animate={{
-                x: status === "listening" ? [-8, 8, -8] : 0,
-                y: status === "listening" ? [-3, 3, -3] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
+            {/* Left Eye */}
+            <motion.g animate={{ scaleY: [1, 1, 0.1, 1, 1] }} transition={{ duration: 4, repeat: Infinity }}>
+              <circle cx="-25" cy="0" r="12" fill="url(#eyeGlow)" opacity="0.4" />
+              <rect x="-32" y="-7" width="14" height="14" rx="3" fill="#818CF8" className="drop-shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
+            </motion.g>
+            {/* Right Eye */}
+            <motion.g animate={{ scaleY: [1, 1, 0.1, 1, 1] }} transition={{ duration: 4, repeat: Infinity }}>
+              <circle cx="25" cy="0" r="12" fill="url(#eyeGlow)" opacity="0.4" />
+              <rect x="18" y="-7" width="14" height="14" rx="3" fill="#818CF8" className="drop-shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
+            </motion.g>
           </>
         )}
 
-        {/* Mouth */}
+        {/* Mouth (Oscilloscope / LED Bar) */}
         {isSpeaking ? (
-          <motion.path
-            d="M -15 25 Q 0 45 15 25 Q 0 45 -15 25"
-            fill="#1E1B4B"
-            animate={{
-              d: [
-                "M -15 25 Q 0 50 15 25 Q 0 50 -15 25",
-                "M -10 25 Q 0 35 10 25 Q 0 35 -10 25",
-              ]
-            }}
-            transition={{ duration: 0.15, repeat: Infinity, repeatType: "mirror" }}
-          />
+          <motion.g transform="translate(0, 30)">
+            <motion.rect x="-25" y="-10" width="4" height="20" fill="#F472B6" animate={{ height: [5, 25, 10] }} transition={{ duration: 0.2, repeat: Infinity }} rx="2" />
+            <motion.rect x="-15" y="-12" width="4" height="24" fill="#F472B6" animate={{ height: [10, 30, 15] }} transition={{ duration: 0.15, repeat: Infinity }} rx="2" />
+            <motion.rect x="-5" y="-15" width="4" height="30" fill="#F472B6" animate={{ height: [15, 35, 20] }} transition={{ duration: 0.25, repeat: Infinity }} rx="2" />
+            <motion.rect x="5" y="-12" width="4" height="24" fill="#F472B6" animate={{ height: [10, 30, 15] }} transition={{ duration: 0.15, repeat: Infinity }} rx="2" />
+            <motion.rect x="15" y="-10" width="4" height="20" fill="#F472B6" animate={{ height: [5, 25, 10] }} transition={{ duration: 0.2, repeat: Infinity }} rx="2" />
+          </motion.g>
         ) : status === "listening" ? (
-          <path
-            d="M -15 25 Q 0 35 15 25"
-            stroke="#1E1B4B"
-            strokeWidth="5"
-            strokeLinecap="round"
-            fill="none"
-          />
-        ) : status === "connecting" ? (
-          <path
-            d="M -10 28 Q 0 22 10 28"
-            stroke="#1E1B4B"
-            strokeWidth="5"
-            strokeLinecap="round"
-            fill="none"
+          <motion.rect 
+            x="-20" y="30" width="40" height="4" rx="2" fill="#818CF8" 
+            animate={{ opacity: [0.3, 1, 0.3], width: [20, 40, 20], x: [-10, -20, -10] }} 
+            transition={{ duration: 1.5, repeat: Infinity }} 
           />
         ) : (
-          <path
-            d="M -10 25 Q 0 30 10 25"
-            stroke="#1E1B4B"
-            strokeWidth="5"
-            strokeLinecap="round"
-            fill="none"
-          />
+          <rect x="-10" y="32" width="20" height="4" rx="2" fill="#334155" />
         )}
-
-        {/* Blinking overlay */}
-        <motion.path
-           d="M -50 -20 L 50 -20 L 50 20 L -50 20 Z"
-           fill="url(#robotBodyGradient)"
-           initial={{ scaleY: 0 }}
-           animate={{ scaleY: status === "idle" ? [0, 0, 1, 0, 0] : 0 }}
-           transition={{ duration: 4, times: [0, 0.9, 0.95, 0.98, 1], repeat: Infinity }}
-           style={{ transformOrigin: "0 -20px" }}
-        />
-
-        {/* Blushes */}
-        <circle cx="-50" cy="18" r="9" fill="#F472B6" opacity="0.8" />
-        <circle cx="50" cy="18" r="9" fill="#F472B6" opacity="0.8" />
       </g>
+
+      {/* Bolts in Corners */}
+      <circle cx="45" cy="45" r="3" fill="#334155" />
+      <circle cx="155" cy="45" r="3" fill="#334155" />
+      <circle cx="45" cy="155" r="3" fill="#334155" />
+      <circle cx="155" cy="155" r="3" fill="#334155" />
+
+      {/* Reflection on top */}
+      <path d="M 50 40 Q 100 35 150 40" stroke="white" strokeWidth="2" opacity="0.1" fill="none" />
     </svg>
   );
 }

@@ -3,7 +3,7 @@
  * for each selectable character avatar.
  */
 
-export type AvatarId = "robot" | "fox" | "fairy";
+export type AvatarId = "robot" | "fox" | "fairy" | "dragon" | "cat";
 
 export interface AvatarConfig {
   id: AvatarId;
@@ -27,8 +27,8 @@ export interface AvatarConfig {
 export const AVATARS: Record<AvatarId, AvatarConfig> = {
   robot: {
     id: "robot",
-    name: "Robot",
-    description: "Un petit robot curieux et rigolo",
+    name: "Robot Cool",
+    description: "Un robot high-tech avec un écran magique",
     emoji: "🤖",
     colors: ["#818CF8", "#A78BFA", "#F472B6"],
     glowColor: "rgba(129, 140, 248, 0.5)",
@@ -61,9 +61,33 @@ export const AVATARS: Record<AvatarId, AvatarConfig> = {
     personalityName: "Leanna la Fée",
     flavorPrompt: "Tu es très douce, tu parles de magie et de poussière d'étoiles, et tu aimes chanter un petit peu.",
   },
+  dragon: {
+    id: "dragon",
+    name: "Dragon rigolo",
+    description: "Un petit dragon qui crache des paillettes",
+    emoji: "🐲",
+    colors: ["#10B981", "#059669", "#F59E0B"],
+    glowColor: "rgba(16, 185, 129, 0.5)",
+    atmosphereColors: ["bg-emerald-900/20", "bg-teal-900/20"],
+    accentClass: "from-emerald-500 to-amber-500",
+    personalityName: "Drago le Dragon",
+    flavorPrompt: "Tu es courageux et protecteur. Tu aimes parler de trésors et tu fais parfois de petits bruits de flammes (Pouf !).",
+  },
+  cat: {
+    id: "cat",
+    name: "Chat cosmique",
+    description: "Un chat aventurier des étoiles",
+    emoji: "🐱",
+    colors: ["#F472B6", "#FB7185", "#818CF8"],
+    glowColor: "rgba(244, 114, 182, 0.5)",
+    atmosphereColors: ["bg-pink-900/20", "bg-indigo-900/20"],
+    accentClass: "from-pink-500 to-indigo-500",
+    personalityName: "Mistigri l'Espace",
+    flavorPrompt: "Tu es très curieux et agile. Tu ronronnes quand tu es content et tu adores explorer les planètes lointaines.",
+  },
 };
 
-export const AVATAR_IDS: AvatarId[] = ["robot", "fox", "fairy"];
+export const AVATAR_IDS: AvatarId[] = ["robot", "fox", "fairy", "dragon", "cat"];
 
 /** Load the saved avatar from localStorage, default to robot */
 export function loadSavedAvatar(): AvatarId {

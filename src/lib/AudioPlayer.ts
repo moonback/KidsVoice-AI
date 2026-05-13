@@ -1,4 +1,6 @@
-export class AudioPlayer {
+import { IAudioPlayer } from "./AudioService";
+
+export class AudioPlayer implements IAudioPlayer {
   private audioContext: AudioContext | null = null;
   private nextPlayTime: number = 0;
 

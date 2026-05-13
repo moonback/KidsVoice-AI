@@ -1,4 +1,6 @@
-export class AudioRecorder {
+import { IAudioRecorder } from "./AudioService";
+
+export class AudioRecorder implements IAudioRecorder {
   private stream: MediaStream | null = null;
   private audioContext: AudioContext | null = null;
   private processor: ScriptProcessorNode | null = null;
