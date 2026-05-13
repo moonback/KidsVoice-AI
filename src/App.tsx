@@ -267,14 +267,14 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-[32px] p-8 md:p-12 shadow-2xl max-w-md w-full mx-4"
+              className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-[28px] sm:rounded-[32px] p-5 sm:p-8 md:p-12 shadow-2xl max-w-md w-full mx-4"
               style={{ boxShadow: `0 20px 60px ${avatar.colors[0]}33` }}
             >
               <div className="text-center mb-8">
                 <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${avatar.accentClass} flex items-center justify-center shadow-lg`}>
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold mb-2" style={{ color: avatar.colors[0] }}>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: avatar.colors[0] }}>
                   Bienvenue ! 🎉
                 </h2>
                 <p className="text-slate-400 text-sm">
@@ -330,7 +330,7 @@ export default function App() {
                 <button
                   type="submit"
                   aria-label="Commencer l'aventure"
-                  className="w-full py-4 bg-gradient-to-r font-bold text-lg rounded-2xl shadow-xl hover:scale-105 transition-transform"
+                  className="w-full py-3.5 sm:py-4 bg-gradient-to-r font-bold text-base sm:text-lg rounded-2xl shadow-xl hover:scale-105 transition-transform"
                   style={{ 
                     background: `linear-gradient(135deg, ${avatar.colors[0]}, ${avatar.colors[1]})`,
                     boxShadow: `0 10px 30px ${avatar.colors[0]}44`
@@ -352,14 +352,14 @@ export default function App() {
       </div>
 
       {/* Header Navigation */}
-      <nav className="relative z-10 flex items-center justify-between px-10 py-8">
+      <nav className="relative z-10 flex items-center justify-between px-4 py-4 sm:px-6 sm:py-6 lg:px-10 lg:py-8">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${avatar.accentClass} flex items-center justify-center shadow-lg`} style={{ boxShadow: `0 4px 14px ${avatar.colors[0]}33` }}>
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xl font-semibold tracking-tight">KidsVoice <span style={{ color: avatar.colors[0] }}>AI</span></span>
+          <span className="text-base sm:text-lg lg:text-xl font-semibold tracking-tight">KidsVoice <span style={{ color: avatar.colors[0] }}>AI</span></span>
         </div>
-        <div className="flex items-center gap-4 text-sm font-medium text-slate-400">
+        <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm font-medium text-slate-400 flex-wrap justify-end">
           {/* Compact Time Widget */}
           {status === "idle" && !usageStatus.isRestricted && (
             <CompactTimeWidget accentColor={avatar.colors[0]} />
@@ -413,7 +413,7 @@ export default function App() {
               )}
             </div>
           )}
-          <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700/50">
+          <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-slate-700/50">
             <div className={`w-2 h-2 rounded-full ${usageStatus.isRestricted ? "bg-amber-400" : "bg-green-400"}`}></div>
             <span>{usageStatus.isRestricted ? "Mode Repos" : "En ligne"}</span>
           </div>
@@ -427,7 +427,7 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-40 w-full max-w-md px-6"
+            className="absolute bottom-20 sm:bottom-24 md:bottom-32 left-1/2 -translate-x-1/2 z-40 w-full max-w-md px-4 sm:px-6"
           >
             <div className="bg-amber-900/40 border border-amber-500/30 backdrop-blur-xl p-6 rounded-[32px] text-center shadow-2xl">
               <span className="text-3xl mb-3 block">{usageStatus.reason === "night" ? "🌙" : "⏳"}</span>
@@ -443,7 +443,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Main Interaction Area */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 md:px-20">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 md:px-10 lg:px-20">
         
         {/* Time Remaining Widget - Floating on the side */}
         <AnimatePresence>
@@ -452,7 +452,7 @@ export default function App() {
               initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 100 }}
-              className="fixed top-32 right-6 z-30 w-64"
+              className="fixed top-20 right-3 sm:top-24 sm:right-4 md:top-32 md:right-6 z-30 w-[min(16rem,calc(100vw-1.5rem))]"
             >
               <TimeRemainingWidget accentColor={avatar.colors[0]} />
             </motion.div>
@@ -496,7 +496,7 @@ export default function App() {
         </div>
 
         {/* The Listening/Speaking Orb */}
-        <div className="relative mb-16 mt-8 flex items-center justify-center">
+        <div className="relative mb-8 sm:mb-12 lg:mb-16 mt-4 sm:mt-6 lg:mt-8 flex items-center justify-center">
           {/* Glow Rings for Listening state */}
           <AnimatePresence>
             {status === "listening" && (
