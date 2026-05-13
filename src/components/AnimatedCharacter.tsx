@@ -2,10 +2,6 @@ import { motion } from "motion/react";
 import type { AvatarId } from "../lib/avatarConfig";
 import { AVATARS } from "../lib/avatarConfig";
 import { RobotAvatar } from "./avatars/RobotAvatar";
-import { FoxAvatar } from "./avatars/FoxAvatar";
-import { FairyAvatar } from "./avatars/FairyAvatar";
-import { DragonAvatar } from "./avatars/DragonAvatar";
-import { CatAvatar } from "./avatars/CatAvatar";
 
 interface Props {
   status: "idle" | "connecting" | "listening";
@@ -42,19 +38,7 @@ export function AnimatedCharacter({ status, isSpeaking, avatarId = "robot", audi
   /** Render the appropriate avatar SVG */
   function renderAvatar() {
     const props = { status: isRestricted ? ("connecting" as const) : status, isSpeaking, audioLevel };
-    switch (avatarId) {
-      case "fox":
-        return <FoxAvatar {...props} />;
-      case "fairy":
-        return <FairyAvatar {...props} />;
-      case "dragon":
-        return <DragonAvatar {...props} />;
-      case "cat":
-        return <CatAvatar {...props} />;
-      case "robot":
-      default:
-        return <RobotAvatar {...props} />;
-    }
+    return <RobotAvatar {...props} />;
   }
 
   // Glow scale reacts to audio level when listening

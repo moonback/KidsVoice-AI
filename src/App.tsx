@@ -91,29 +91,53 @@ export default function App() {
     setErrorMsg("");
 
     try {
+      console.log("🚀 Démarrage de la session...");
+      
+      // Request microphone permission FIRST
+      console.log("🎤 Demande de permission microphone...");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      console.log("✅ Permission microphone accordée");
+      // Stop the test stream immediately
+      stream.getTracks().forEach(track => track.stop());
+      
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       audioPlayer.current?.clearQueue();
 
+      console.log("📡 Connexion à Gemini Live...");
       // Connect and await the session before setting callbacks that rely on it
       const session = await ai.live.connect({
         model: "gemini-3.1-flash-live-preview",
         callbacks: {
           onopen: () => {
+            console.log("✅ Session ouverte !");
             setStatus("listening");
             // Start recording only after the session is ready
-            audioRecorder.current?.start(
-              (base64Data) => {
-                // Ensure the session is still open before sending
-                if (sessionRef.current) {
-                  sessionRef.current.sendRealtimeInput({
-                    audio: { data: base64Data, mimeType: "audio/pcm;rate=16000" },
-                  });
-                }
-              },
-              handleAudioLevel,
-            );
+            try {
+              console.log("🎤 Démarrage de l'enregistrement audio...");
+              audioRecorder.current?.start(
+                (base64Data) => {
+                  // Ensure the session is still open before sending
+                  if (sessionRef.current) {
+                    sessionRef.current.sendRealtimeInput({
+                      audio: { data: base64Data, mimeType: "audio/pcm;rate=16000" },
+                    });
+                  }
+                },
+                handleAudioLevel,
+              );
+              console.log("✅ Enregistrement audio démarré");
+            } catch (error) {
+              console.error("❌ Erreur lors du démarrage de l'enregistrement:", error);
+            }
           },
           onmessage: (message: any) => {
+            console.log("📨 Message reçu:", message);
             const base64Audio =
               message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio) {
@@ -128,14 +152,26 @@ export default function App() {
               if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
             }
           },
-          onclose: () => {
+          onclose: (event: any) => {
+            console.log("🔴 Session fermée");
+            console.log("Code de fermeture:", event?.code);
+            console.log("Raison:", event?.reason);
+            console.log("Event complet:", event);
+            console.trace("Stack trace de la fermeture");
+            
+            // Show error message if there's a reason
+            if (event?.reason) {
+              setErrorMsg(event.reason);
+            }
+            
             setStatus("idle");
             audioRecorder.current?.stop();
             // Cleanup session reference
             sessionRef.current = null;
           },
           onerror: (error: any) => {
-            console.error("Live API Error", error);
+            console.error("❌ Live API Error", error);
+            console.error("Error details:", JSON.stringify(error, null, 2));
             setErrorMsg("Une erreur avec la connexion vocale s'est produite.");
             stopSession();
           },
@@ -149,10 +185,11 @@ export default function App() {
         },
       });
 
+      console.log("💾 Session stockée");
       // Store the active session
       sessionRef.current = session;
     } catch (err: any) {
-      console.error("Failed to start session:", err);
+      console.error("💥 Failed to start session:", err);
       if (err.name === "NotAllowedError") {
         setErrorMsg("Je n'ai pas la permission d'utiliser le microphone !");
       } else {

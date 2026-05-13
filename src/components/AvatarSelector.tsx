@@ -2,10 +2,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { AVATARS, AVATAR_IDS, type AvatarId } from "../lib/avatarConfig";
 import { RobotAvatar } from "./avatars/RobotAvatar";
-import { FoxAvatar } from "./avatars/FoxAvatar";
-import { FairyAvatar } from "./avatars/FairyAvatar";
-import { DragonAvatar } from "./avatars/DragonAvatar";
-import { CatAvatar } from "./avatars/CatAvatar";
 
 interface Props {
   isOpen: boolean;
@@ -17,18 +13,7 @@ interface Props {
 /** Mini avatar preview — renders the idle avatar in a small container */
 function AvatarPreview({ avatarId }: { avatarId: AvatarId }) {
   const props = { status: "idle" as const, isSpeaking: false };
-  switch (avatarId) {
-    case "robot":
-      return <RobotAvatar {...props} />;
-    case "fox":
-      return <FoxAvatar {...props} />;
-    case "fairy":
-      return <FairyAvatar {...props} />;
-    case "dragon":
-      return <DragonAvatar {...props} />;
-    case "cat":
-      return <CatAvatar {...props} />;
-  }
+  return <RobotAvatar {...props} />;
 }
 
 /**
