@@ -1,15 +1,13 @@
 import { motion } from "motion/react";
-
-interface Props {
-  status: "idle" | "connecting" | "listening";
-  isSpeaking: boolean;
-}
+import type { AvatarProps } from "./AvatarProps";
 
 /**
- * Robot Avatar — A more mechanical, high-tech robot 
- * with metallic textures, LED eyes, and antennas.
+ * Robot Avatar — Metallic high-tech robot with LED eyes and oscilloscope mouth.
+ * Audio level drives antenna pulse speed, eye glow intensity, and mouth bar height.
  */
-export function RobotAvatar({ status, isSpeaking }: Props) {
+export function RobotAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
+  const al = status === "listening" ? audioLevel : 0;
+
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_30px_rgba(79,70,229,0.4)]">
       <defs>
@@ -28,28 +26,28 @@ export function RobotAvatar({ status, isSpeaking }: Props) {
         </radialGradient>
       </defs>
 
-      {/* Main Antenna */}
+      {/* Main Antenna — pulse reacts to audioLevel */}
       <motion.g animate={{ rotate: status === "listening" ? [-2, 2, -2] : 0 }} transition={{ duration: 1, repeat: Infinity }}>
         <rect x="98" y="10" width="4" height="25" fill="#475569" rx="2" />
         <motion.circle 
           cx="100" cy="10" r="5" 
           fill={status === "connecting" ? "#EF4444" : "#6366F1"} 
-          animate={{ opacity: [1, 0.4, 1] }} 
-          transition={{ duration: 0.8, repeat: Infinity }} 
+          animate={{ opacity: [1, 0.3 + al * 0.7, 1], r: [5, 5 + al * 3, 5] }}
+          transition={{ duration: Math.max(0.15, 0.8 - al * 0.6), repeat: Infinity }}
         />
       </motion.g>
 
-      {/* Side Ears/Bolts */}
+      {/* Side Bolts */}
       <rect x="25" y="85" width="10" height="30" fill="#475569" rx="4" />
       <rect x="165" y="85" width="10" height="30" fill="#475569" rx="4" />
 
-      {/* Head Shell (Rounded Square) */}
+      {/* Head Shell */}
       <rect x="35" y="35" width="130" height="130" rx="30" fill="url(#metalGradient)" />
       
       {/* Face Screen */}
       <rect x="50" y="55" width="100" height="85" rx="15" fill="url(#screenGradient)" stroke="#334155" strokeWidth="2" />
 
-      {/* Grid Lines on Screen (LED Matrix effect) */}
+      {/* Grid Lines */}
       <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
         <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" opacity="0.05" />
       </pattern>
@@ -64,20 +62,19 @@ export function RobotAvatar({ status, isSpeaking }: Props) {
           </g>
         ) : (
           <>
-            {/* Left Eye */}
+            {/* Eyes glow brighter with audio */}
             <motion.g animate={{ scaleY: [1, 1, 0.1, 1, 1] }} transition={{ duration: 4, repeat: Infinity }}>
-              <circle cx="-25" cy="0" r="12" fill="url(#eyeGlow)" opacity="0.4" />
-              <rect x="-32" y="-7" width="14" height="14" rx="3" fill="#818CF8" className="drop-shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
+              <circle cx="-25" cy="0" r="12" fill="url(#eyeGlow)" opacity={0.3 + al * 0.6} />
+              <rect x="-32" y="-7" width="14" height="14" rx="3" fill="#818CF8" opacity={0.7 + al * 0.3} className="drop-shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
             </motion.g>
-            {/* Right Eye */}
             <motion.g animate={{ scaleY: [1, 1, 0.1, 1, 1] }} transition={{ duration: 4, repeat: Infinity }}>
-              <circle cx="25" cy="0" r="12" fill="url(#eyeGlow)" opacity="0.4" />
-              <rect x="18" y="-7" width="14" height="14" rx="3" fill="#818CF8" className="drop-shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
+              <circle cx="25" cy="0" r="12" fill="url(#eyeGlow)" opacity={0.3 + al * 0.6} />
+              <rect x="18" y="-7" width="14" height="14" rx="3" fill="#818CF8" opacity={0.7 + al * 0.3} className="drop-shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
             </motion.g>
           </>
         )}
 
-        {/* Mouth (Oscilloscope / LED Bar) */}
+        {/* Mouth — bars react to audioLevel */}
         {isSpeaking ? (
           <motion.g transform="translate(0, 30)">
             <motion.rect x="-25" y="-10" width="4" height="20" fill="#F472B6" animate={{ height: [5, 25, 10] }} transition={{ duration: 0.2, repeat: Infinity }} rx="2" />
@@ -87,11 +84,14 @@ export function RobotAvatar({ status, isSpeaking }: Props) {
             <motion.rect x="15" y="-10" width="4" height="20" fill="#F472B6" animate={{ height: [5, 25, 10] }} transition={{ duration: 0.2, repeat: Infinity }} rx="2" />
           </motion.g>
         ) : status === "listening" ? (
-          <motion.rect 
-            x="-20" y="30" width="40" height="4" rx="2" fill="#818CF8" 
-            animate={{ opacity: [0.3, 1, 0.3], width: [20, 40, 20], x: [-10, -20, -10] }} 
-            transition={{ duration: 1.5, repeat: Infinity }} 
-          />
+          <g transform="translate(0, 30)">
+            {/* Audio-reactive equalizer bars */}
+            <rect x="-25" y={-2 - al * 8} width="4" height={4 + al * 16} fill="#818CF8" rx="2" opacity={0.4 + al * 0.6} />
+            <rect x="-15" y={-3 - al * 12} width="4" height={6 + al * 24} fill="#818CF8" rx="2" opacity={0.4 + al * 0.6} />
+            <rect x="-5" y={-4 - al * 14} width="4" height={8 + al * 28} fill="#818CF8" rx="2" opacity={0.4 + al * 0.6} />
+            <rect x="5" y={-3 - al * 12} width="4" height={6 + al * 24} fill="#818CF8" rx="2" opacity={0.4 + al * 0.6} />
+            <rect x="15" y={-2 - al * 8} width="4" height={4 + al * 16} fill="#818CF8" rx="2" opacity={0.4 + al * 0.6} />
+          </g>
         ) : (
           <rect x="-10" y="32" width="20" height="4" rx="2" fill="#334155" />
         )}
@@ -103,7 +103,7 @@ export function RobotAvatar({ status, isSpeaking }: Props) {
       <circle cx="45" cy="155" r="3" fill="#334155" />
       <circle cx="155" cy="155" r="3" fill="#334155" />
 
-      {/* Reflection on top */}
+      {/* Reflection */}
       <path d="M 50 40 Q 100 35 150 40" stroke="white" strokeWidth="2" opacity="0.1" fill="none" />
     </svg>
   );

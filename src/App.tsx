@@ -1,6 +1,6 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { Mic, Square, Sparkles, Loader2, Palette } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AudioRecorder } from "./lib/AudioRecorder";
 import { AudioPlayer } from "./lib/AudioPlayer";
@@ -8,7 +8,7 @@ import { IAudioRecorder, IAudioPlayer } from "./lib/AudioService";
 import { buildSystemPrompt } from "./lib/systemPrompt";
 import { AnimatedCharacter } from "./components/AnimatedCharacter";
 import { AvatarSelector } from "./components/AvatarSelector";
-import { AVATARS, loadSavedAvatar, saveAvatar, type AvatarId } from "./lib/avatarConfig";
+import { AVATARS, loadSavedAvatar, saveAvatar, loadChildName, saveChildName, type AvatarId } from "./lib/avatarConfig";
 
 export default function App() {
   const [status, setStatus] = useState<"idle" | "connecting" | "listening">("idle");
@@ -16,6 +16,21 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState("");
   const [avatarId, setAvatarId] = useState<AvatarId>(loadSavedAvatar);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+  const [childName, setChildName] = useState(loadChildName());
+  const [audioLevel, setAudioLevel] = useState(0);
+  const audioLevelRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+
+  // Throttle audioLevel updates to animation frames for performance
+  const handleAudioLevel = useCallback((level: number) => {
+    audioLevelRef.current = level;
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(() => {
+        setAudioLevel(audioLevelRef.current);
+        rafRef.current = null;
+      });
+    }
+  }, []);
   const audioRecorder = useRef<IAudioRecorder | null>(null);
   const audioPlayer = useRef<IAudioPlayer | null>(null);
   const sessionRef = useRef<any>(null);
@@ -62,14 +77,17 @@ export default function App() {
           onopen: () => {
             setStatus("listening");
             // Start recording only after the session is ready
-            audioRecorder.current?.start((base64Data) => {
-              // Ensure the session is still open before sending
-              if (sessionRef.current) {
-                sessionRef.current.sendRealtimeInput({
-                  audio: { data: base64Data, mimeType: "audio/pcm;rate=16000" },
-                });
-              }
-            });
+            audioRecorder.current?.start(
+              (base64Data) => {
+                // Ensure the session is still open before sending
+                if (sessionRef.current) {
+                  sessionRef.current.sendRealtimeInput({
+                    audio: { data: base64Data, mimeType: "audio/pcm;rate=16000" },
+                  });
+                }
+              },
+              handleAudioLevel,
+            );
           },
           onmessage: (message: any) => {
             const base64Audio =
@@ -103,7 +121,7 @@ export default function App() {
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } },
           },
-          systemInstruction: buildSystemPrompt(avatarId),
+          systemInstruction: buildSystemPrompt(avatarId, childName),
         },
       });
 
@@ -134,6 +152,7 @@ export default function App() {
     audioPlayer.current?.clearQueue();
     setStatus("idle");
     setIsSpeaking(false);
+    setAudioLevel(0);
     if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
   };
 
@@ -154,7 +173,54 @@ export default function App() {
           </div>
           <span className="text-xl font-semibold tracking-tight">KidsVoice <span style={{ color: avatar.colors[0] }}>AI</span></span>
         </div>
-        <div className="flex items-center gap-3 text-sm font-medium text-slate-400">
+        <div className="flex items-center gap-4 text-sm font-medium text-slate-400">
+          {/* Child Name Input / Greeting — only when idle */}
+          {status === "idle" && (
+            <div className="flex items-center gap-2">
+              {!childName ? (
+                <div className="flex items-center gap-2 bg-slate-800/30 px-3 py-1.5 rounded-full border border-slate-700/30 focus-within:border-slate-500 transition-colors">
+                  <span className="text-xs uppercase tracking-wider font-bold opacity-50">Ton Prénom :</span>
+                  <input
+                    type="text"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const val = (e.target as HTMLInputElement).value;
+                        setChildName(val);
+                        saveChildName(val);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const val = e.target.value;
+                      if (val) {
+                        setChildName(val);
+                        saveChildName(val);
+                      }
+                    }}
+                    placeholder="Tape ici..."
+                    className="bg-transparent border-none outline-none text-slate-200 w-24 sm:w-32 placeholder:text-slate-600"
+                  />
+                </div>
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-3 bg-slate-800/30 px-4 py-1.5 rounded-full border border-slate-700/30"
+                >
+                  <span className="text-slate-300">Salut, <span className="font-bold" style={{ color: avatar.colors[0] }}>{childName}</span> !</span>
+                  <button 
+                    onClick={() => {
+                      setChildName("");
+                      saveChildName("");
+                    }}
+                    className="text-xs text-slate-500 hover:text-red-400 transition-colors"
+                    title="Changer de nom"
+                  >
+                    (Changer)
+                  </button>
+                </motion.div>
+              )}
+            </div>
+          )}
           {/* Avatar Selector Button — only when idle */}
           {status === "idle" && (
             <motion.button
@@ -242,10 +308,10 @@ export default function App() {
                 className="relative rounded-full focus:outline-none"
                 title="Clique pour parler !"
               >
-                <AnimatedCharacter status={status} isSpeaking={isSpeaking} avatarId={avatarId} />
+                <AnimatedCharacter status={status} isSpeaking={isSpeaking} avatarId={avatarId} audioLevel={audioLevel} />
               </motion.button>
             ) : (
-              <AnimatedCharacter status={status} isSpeaking={isSpeaking} avatarId={avatarId} />
+              <AnimatedCharacter status={status} isSpeaking={isSpeaking} avatarId={avatarId} audioLevel={audioLevel} />
             )}
           </div>
         </div>

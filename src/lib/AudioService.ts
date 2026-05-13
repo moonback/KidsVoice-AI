@@ -4,8 +4,12 @@
  */
 
 export interface IAudioRecorder {
-  /** Start capturing audio and call onAudioData with PCM 16-bit Base64 chunks */
-  start(onAudioData: (base64Data: string) => void): Promise<void>;
+  /** Start capturing audio and call onAudioData with PCM 16-bit Base64 chunks.
+   *  Optionally calls onAudioLevel with a normalized 0-1 RMS volume level. */
+  start(
+    onAudioData: (base64Data: string) => void,
+    onAudioLevel?: (level: number) => void,
+  ): Promise<void>;
   /** Stop capturing audio and release hardware resources */
   stop(): void;
 }

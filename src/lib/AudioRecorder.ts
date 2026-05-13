@@ -6,7 +6,10 @@ export class AudioRecorder implements IAudioRecorder {
   private processor: ScriptProcessorNode | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
 
-  async start(onAudioData: (base64Data: string) => void) {
+  async start(
+    onAudioData: (base64Data: string) => void,
+    onAudioLevel?: (level: number) => void,
+  ) {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -24,6 +27,19 @@ export class AudioRecorder implements IAudioRecorder {
 
       this.processor.onaudioprocess = (e) => {
         const inputData = e.inputBuffer.getChannelData(0);
+
+        // Calculate RMS audio level (0-1) for reactive animations
+        if (onAudioLevel) {
+          let sum = 0;
+          for (let i = 0; i < inputData.length; i++) {
+            sum += inputData[i] * inputData[i];
+          }
+          const rms = Math.sqrt(sum / inputData.length);
+          // Amplify and clamp to 0-1 range for better visual reactivity
+          const level = Math.min(1, rms * 3);
+          onAudioLevel(level);
+        }
+
         const pcm16 = this.floatTo16BitPCM(inputData);
         const base64 = this.arrayBufferToBase64(pcm16.buffer);
         onAudioData(base64);

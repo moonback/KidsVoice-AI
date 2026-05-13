@@ -104,3 +104,19 @@ export function saveAvatar(id: AvatarId): void {
     localStorage.setItem("kidsvoice-avatar", id);
   } catch { }
 }
+
+/** Load the saved child's name from localStorage */
+export function loadChildName(): string {
+  try {
+    return localStorage.getItem("kidsvoice-child-name") || "";
+  } catch {
+    return "";
+  }
+}
+
+/** Persist the child's name */
+export function saveChildName(name: string): void {
+  try {
+    localStorage.setItem("kidsvoice-child-name", name);
+  } catch { }
+}

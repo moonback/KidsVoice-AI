@@ -1,15 +1,13 @@
 import { motion } from "motion/react";
-
-interface Props {
-  status: "idle" | "connecting" | "listening";
-  isSpeaking: boolean;
-}
+import type { AvatarProps } from "./AvatarProps";
 
 /**
- * Fox Avatar — A playful magic fox with large pointed ears,
- * a fluffy body, a bushy tail, and whiskers.
+ * Fox Avatar — Playful magic fox.
+ * Audio level drives ear twitching intensity, tail wagging speed, and eye glow.
  */
-export function FoxAvatar({ status, isSpeaking }: Props) {
+export function FoxAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
+  const al = status === "listening" ? audioLevel : 0;
+
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(251,146,60,0.5)]">
       <defs>
@@ -33,7 +31,7 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
         </linearGradient>
       </defs>
 
-      {/* Tail - behind body */}
+      {/* Tail - speed reacts to audioLevel */}
       <motion.path
         d="M 155 150 Q 190 120 185 90 Q 195 100 190 130 Q 185 155 160 160"
         fill="url(#foxTailGradient)"
@@ -49,42 +47,22 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
               : "M 155 150 Q 190 120 185 90 Q 195 100 190 130 Q 185 155 160 160",
         }}
         transition={{
-          duration: isSpeaking ? 0.3 : 2.5,
+          duration: isSpeaking ? 0.3 : Math.max(0.4, 2.5 - al * 2),
           repeat: Infinity,
           ease: "easeInOut",
         }}
       />
-      {/* Tail tip (white) */}
-      <motion.path
-        d="M 185 90 Q 190 80 187 85 Q 192 92 185 90"
-        fill="#FEFCE8"
-        animate={{
-          d: isSpeaking
-            ? "M 190 75 Q 195 65 192 70 Q 197 77 190 75"
-            : "M 185 90 Q 190 80 187 85 Q 192 92 185 90",
-        }}
-        transition={{ duration: 0.3 }}
-      />
 
-      {/* Left Ear */}
+      {/* Left Ear - twitching reacts to audioLevel */}
       <motion.path
         d="M 55 75 L 35 20 L 75 55 Z"
         fill="url(#foxEarGradient)"
         animate={{
-          rotate: isSpeaking ? [-4, 4, -4] : status === "listening" ? [0, -8, 0] : 0,
+          rotate: isSpeaking ? [-4, 4, -4] : status === "listening" ? [0, -15 * al, 0] : 0,
+          scale: status === "listening" ? [1, 1 + al * 0.1, 1] : 1,
         }}
         style={{ transformOrigin: "60px 65px" }}
-        transition={{ duration: isSpeaking ? 0.2 : 2, repeat: Infinity }}
-      />
-      {/* Left Ear Inner */}
-      <motion.path
-        d="M 55 65 L 42 30 L 68 55 Z"
-        fill="#FDE68A"
-        animate={{
-          rotate: isSpeaking ? [-4, 4, -4] : status === "listening" ? [0, -8, 0] : 0,
-        }}
-        style={{ transformOrigin: "60px 65px" }}
-        transition={{ duration: isSpeaking ? 0.2 : 2, repeat: Infinity }}
+        transition={{ duration: isSpeaking ? 0.2 : Math.max(0.1, 0.5 - al * 0.4), repeat: Infinity }}
       />
 
       {/* Right Ear */}
@@ -92,20 +70,11 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
         d="M 145 75 L 165 20 L 125 55 Z"
         fill="url(#foxEarGradient)"
         animate={{
-          rotate: isSpeaking ? [4, -4, 4] : status === "listening" ? [0, 8, 0] : 0,
+          rotate: isSpeaking ? [4, -4, 4] : status === "listening" ? [0, 15 * al, 0] : 0,
+          scale: status === "listening" ? [1, 1 + al * 0.1, 1] : 1,
         }}
         style={{ transformOrigin: "140px 65px" }}
-        transition={{ duration: isSpeaking ? 0.2 : 2, repeat: Infinity }}
-      />
-      {/* Right Ear Inner */}
-      <motion.path
-        d="M 145 65 L 158 30 L 132 55 Z"
-        fill="#FDE68A"
-        animate={{
-          rotate: isSpeaking ? [4, -4, 4] : status === "listening" ? [0, 8, 0] : 0,
-        }}
-        style={{ transformOrigin: "140px 65px" }}
-        transition={{ duration: isSpeaking ? 0.2 : 2, repeat: Infinity }}
+        transition={{ duration: isSpeaking ? 0.2 : Math.max(0.1, 0.5 - al * 0.4), repeat: Infinity }}
       />
 
       {/* Body */}
@@ -141,9 +110,9 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
           </g>
         ) : (
           <>
-            {/* Pupils */}
+            {/* Pupils - glow and size react to audioLevel */}
             <motion.circle
-              cx="-28" cy={isSpeaking ? "-7" : "-3"} r="6" fill="#78350F"
+              cx="-28" cy={isSpeaking ? "-7" : "-3"} r={6 + al * 2} fill="#78350F"
               animate={{
                 x: status === "listening" ? [-5, 5, -5] : 0,
                 y: status === "listening" ? [-2, 2, -2] : 0,
@@ -151,24 +120,7 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.circle
-              cx="28" cy={isSpeaking ? "-7" : "-3"} r="6" fill="#78350F"
-              animate={{
-                x: status === "listening" ? [-5, 5, -5] : 0,
-                y: status === "listening" ? [-2, 2, -2] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            {/* Highlights */}
-            <motion.circle
-              cx="-31" cy={isSpeaking ? "-10" : "-6"} r="2" fill="white"
-              animate={{
-                x: status === "listening" ? [-5, 5, -5] : 0,
-                y: status === "listening" ? [-2, 2, -2] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.circle
-              cx="25" cy={isSpeaking ? "-10" : "-6"} r="2" fill="white"
+              cx="28" cy={isSpeaking ? "-7" : "-3"} r={6 + al * 2} fill="#78350F"
               animate={{
                 x: status === "listening" ? [-5, 5, -5] : 0,
                 y: status === "listening" ? [-2, 2, -2] : 0,
@@ -179,15 +131,19 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
         )}
 
         {/* Nose */}
-        <ellipse cx="0" cy="15" rx="6" ry="4" fill="#78350F" />
+        <motion.ellipse 
+          cx="0" cy="15" rx={6 + al * 2} ry={4 + al} fill="#78350F" 
+          animate={{ scale: status === "listening" ? [1, 1.2, 1] : 1 }}
+          transition={{ duration: 0.2, repeat: Infinity }}
+        />
 
-        {/* Whiskers */}
+        {/* Whiskers - shaking reacts to audioLevel */}
         <motion.g
           animate={{
-            rotate: isSpeaking ? [-3, 3, -3] : 0,
+            rotate: isSpeaking ? [-3, 3, -3] : status === "listening" ? [-5 * al, 5 * al, -5 * al] : 0,
           }}
           style={{ transformOrigin: "0px 15px" }}
-          transition={{ duration: 0.3, repeat: Infinity }}
+          transition={{ duration: 0.1, repeat: Infinity }}
         >
           <line x1="-8" y1="13" x2="-40" y2="8" stroke="#78350F" strokeWidth="1.5" opacity="0.6" />
           <line x1="-8" y1="17" x2="-40" y2="20" stroke="#78350F" strokeWidth="1.5" opacity="0.6" />
@@ -196,7 +152,16 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
         </motion.g>
 
         {/* Mouth */}
-        {isSpeaking ? (
+        {status === "listening" ? (
+          <motion.path
+            d="M -10 22 Q 0 30 10 22"
+            stroke="#78350F"
+            strokeWidth="4"
+            strokeLinecap="round"
+            fill="none"
+            animate={{ d: `M -${10 + al * 5} 22 Q 0 ${30 + al * 10} ${10 + al * 5} 22` }}
+          />
+        ) : isSpeaking ? (
           <motion.path
             d="M -10 22 Q 0 38 10 22 Q 0 38 -10 22"
             fill="#78350F"
@@ -208,22 +173,6 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
             }}
             transition={{ duration: 0.15, repeat: Infinity, repeatType: "mirror" }}
           />
-        ) : status === "listening" ? (
-          <path
-            d="M -10 22 Q 0 30 10 22"
-            stroke="#78350F"
-            strokeWidth="4"
-            strokeLinecap="round"
-            fill="none"
-          />
-        ) : status === "connecting" ? (
-          <path
-            d="M -7 25 Q 0 20 7 25"
-            stroke="#78350F"
-            strokeWidth="4"
-            strokeLinecap="round"
-            fill="none"
-          />
         ) : (
           <path
             d="M -8 22 Q 0 27 8 22"
@@ -233,20 +182,6 @@ export function FoxAvatar({ status, isSpeaking }: Props) {
             fill="none"
           />
         )}
-
-        {/* Blinking overlay */}
-        <motion.path
-          d="M -45 -20 L 45 -20 L 45 15 L -45 15 Z"
-          fill="url(#foxBodyGradient)"
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: status === "idle" ? [0, 0, 1, 0, 0] : 0 }}
-          transition={{ duration: 4, times: [0, 0.9, 0.95, 0.98, 1], repeat: Infinity }}
-          style={{ transformOrigin: "0 -20px" }}
-        />
-
-        {/* Blushes */}
-        <circle cx="-42" cy="10" r="8" fill="#FBBF24" opacity="0.5" />
-        <circle cx="42" cy="10" r="8" fill="#FBBF24" opacity="0.5" />
       </g>
     </svg>
   );

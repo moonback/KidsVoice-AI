@@ -1,15 +1,13 @@
 import { motion } from "motion/react";
-
-interface Props {
-  status: "idle" | "connecting" | "listening";
-  isSpeaking: boolean;
-}
+import type { AvatarProps } from "./AvatarProps";
 
 /**
- * Fairy Avatar — A magical fairy with translucent wings,
- * a flowing silhouette, sparkle particles, and a wand-like antenna.
+ * Fairy Avatar — Magical fairy.
+ * Audio level drives wing flapping speed, sparkle intensity, and eye glow.
  */
-export function FairyAvatar({ status, isSpeaking }: Props) {
+export function FairyAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
+  const al = status === "listening" ? audioLevel : 0;
+
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(232,121,249,0.5)]">
       <defs>
@@ -32,58 +30,37 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
         </radialGradient>
       </defs>
 
-      {/* Sparkle particles */}
+      {/* Sparkle particles - count and intensity react to audioLevel */}
       <motion.circle
-        cx="40" cy="45" r="2"
+        cx="40" cy="45" r={2 + al * 2}
         fill="#FDE68A"
         animate={{
           opacity: [0, 1, 0],
-          scale: [0.5, 1.2, 0.5],
-          y: [0, -8, 0],
+          scale: [0.5, 1.2 + al, 0.5],
+          y: [0, -8 - al * 10, 0],
         }}
-        transition={{ duration: 2, repeat: Infinity, delay: 0 }}
+        transition={{ duration: Math.max(0.2, 2 - al * 1.5), repeat: Infinity, delay: 0 }}
       />
       <motion.circle
-        cx="160" cy="55" r="1.5"
+        cx="160" cy="55" r={1.5 + al * 1.5}
         fill="#FDE68A"
         animate={{
           opacity: [0, 1, 0],
-          scale: [0.5, 1.5, 0.5],
-          y: [0, -6, 0],
+          scale: [0.5, 1.5 + al, 0.5],
+          y: [0, -6 - al * 10, 0],
         }}
-        transition={{ duration: 2.5, repeat: Infinity, delay: 0.8 }}
+        transition={{ duration: Math.max(0.2, 2.5 - al * 1.5), repeat: Infinity, delay: 0.8 }}
       />
-      <motion.circle
-        cx="55" cy="165" r="1.8"
-        fill="#A5F3FC"
-        animate={{
-          opacity: [0, 1, 0],
-          scale: [0.5, 1.3, 0.5],
-          y: [0, -10, 0],
-        }}
-        transition={{ duration: 2, repeat: Infinity, delay: 1.2 }}
-      />
-      <motion.circle
-        cx="150" cy="170" r="1.5"
-        fill="#F0ABFC"
-        animate={{
-          opacity: [0, 1, 0],
-          scale: [0.5, 1.4, 0.5],
-          y: [0, -7, 0],
-        }}
-        transition={{ duration: 1.8, repeat: Infinity, delay: 0.4 }}
-      />
-      <motion.circle
-        cx="100" cy="30" r="2"
-        fill="#FDE68A"
-        animate={{
-          opacity: [0, 1, 0],
-          scale: [0.5, 1.5, 0.5],
-        }}
-        transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
-      />
+      {al > 0.3 && (
+        <motion.circle
+          cx="100" cy="40" r={2 + al * 3}
+          fill="#FDE68A"
+          animate={{ opacity: [0, 1, 0], scale: [0.5, 2, 0.5], y: [0, -20, 0] }}
+          transition={{ duration: 0.5, repeat: Infinity }}
+        />
+      )}
 
-      {/* Left Wing */}
+      {/* Left Wing - flapping reacts to audioLevel */}
       <motion.path
         d="M 55 90 Q 5 60 15 110 Q 20 140 50 130"
         fill="url(#fairyWingGradient)"
@@ -91,42 +68,15 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
         strokeWidth="1"
         strokeOpacity="0.4"
         animate={{
-          d: isSpeaking
+          d: isSpeaking || status === "listening"
             ? [
-                "M 55 90 Q 0 55 10 110 Q 15 145 50 130",
-                "M 55 90 Q 10 65 20 110 Q 25 140 50 130",
+                `M 55 90 Q ${0 - al * 30} ${55 - al * 10} 10 110 Q 15 145 50 130`,
+                `M 55 90 Q ${10 + al * 20} ${65 + al * 10} 20 110 Q 25 140 50 130`,
               ]
-            : status === "listening"
-              ? [
-                  "M 55 90 Q 5 60 15 110 Q 20 140 50 130",
-                  "M 55 90 Q 0 55 12 108 Q 18 142 50 130",
-                  "M 55 90 Q 5 60 15 110 Q 20 140 50 130",
-                ]
-              : "M 55 90 Q 5 60 15 110 Q 20 140 50 130",
+            : "M 55 90 Q 5 60 15 110 Q 20 140 50 130",
         }}
         transition={{
-          duration: isSpeaking ? 0.4 : 3,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-      {/* Left Lower Wing */}
-      <motion.path
-        d="M 55 120 Q 20 130 25 155 Q 30 170 55 155"
-        fill="url(#fairyWingGradient2)"
-        stroke="#C084FC"
-        strokeWidth="1"
-        strokeOpacity="0.3"
-        animate={{
-          d: isSpeaking
-            ? [
-                "M 55 120 Q 15 128 20 155 Q 25 172 55 155",
-                "M 55 120 Q 25 132 30 155 Q 35 170 55 155",
-              ]
-            : "M 55 120 Q 20 130 25 155 Q 30 170 55 155",
-        }}
-        transition={{
-          duration: isSpeaking ? 0.4 : 3,
+          duration: isSpeaking ? 0.4 : Math.max(0.2, 3 - al * 2.5),
           repeat: Infinity,
           ease: "easeInOut",
         }}
@@ -140,64 +90,19 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
         strokeWidth="1"
         strokeOpacity="0.4"
         animate={{
-          d: isSpeaking
+          d: isSpeaking || status === "listening"
             ? [
-                "M 145 90 Q 200 55 190 110 Q 185 145 150 130",
-                "M 145 90 Q 190 65 180 110 Q 175 140 150 130",
+                `M 145 90 Q ${200 + al * 30} ${55 - al * 10} 190 110 Q 185 145 150 130`,
+                `M 145 90 Q ${190 - al * 20} ${65 + al * 10} 180 110 Q 175 140 150 130`,
               ]
-            : status === "listening"
-              ? [
-                  "M 145 90 Q 195 60 185 110 Q 180 140 150 130",
-                  "M 145 90 Q 200 55 188 108 Q 182 142 150 130",
-                  "M 145 90 Q 195 60 185 110 Q 180 140 150 130",
-                ]
-              : "M 145 90 Q 195 60 185 110 Q 180 140 150 130",
+            : "M 145 90 Q 195 60 185 110 Q 180 140 150 130",
         }}
         transition={{
-          duration: isSpeaking ? 0.4 : 3,
+          duration: isSpeaking ? 0.4 : Math.max(0.2, 3 - al * 2.5),
           repeat: Infinity,
           ease: "easeInOut",
         }}
       />
-      {/* Right Lower Wing */}
-      <motion.path
-        d="M 145 120 Q 180 130 175 155 Q 170 170 145 155"
-        fill="url(#fairyWingGradient2)"
-        stroke="#C084FC"
-        strokeWidth="1"
-        strokeOpacity="0.3"
-        animate={{
-          d: isSpeaking
-            ? [
-                "M 145 120 Q 185 128 180 155 Q 175 172 145 155",
-                "M 145 120 Q 175 132 170 155 Q 165 170 145 155",
-              ]
-            : "M 145 120 Q 180 130 175 155 Q 170 170 145 155",
-        }}
-        transition={{
-          duration: isSpeaking ? 0.4 : 3,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      {/* Crown / Tiara */}
-      <motion.path
-        d="M 70 52 L 80 35 L 90 48 L 100 28 L 110 48 L 120 35 L 130 52"
-        stroke="#FDE68A"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        animate={{
-          y: isSpeaking ? [0, -2, 0] : 0,
-        }}
-        transition={{ duration: 0.3, repeat: Infinity }}
-      />
-      {/* Crown jewels */}
-      <circle cx="100" cy="28" r="3" fill="#FDE68A" />
-      <circle cx="80" cy="35" r="2" fill="#A5F3FC" />
-      <circle cx="120" cy="35" r="2" fill="#F0ABFC" />
 
       {/* Body */}
       <motion.path
@@ -211,8 +116,12 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
         fill="url(#fairyBodyGradient)"
       />
 
-      {/* Inner glow */}
-      <ellipse cx="100" cy="120" rx="40" ry="35" fill="url(#fairyGlow)" />
+      {/* Inner glow - intensity reacts to audioLevel */}
+      <ellipse 
+        cx="100" cy="120" rx={40 + al * 20} ry={35 + al * 15} 
+        fill="url(#fairyGlow)" 
+        opacity={0.4 + al * 0.4}
+      />
 
       {/* Face features */}
       <g transform="translate(100, 95)">
@@ -223,15 +132,14 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
 
         {status === "connecting" ? (
           <g>
-            {/* Happy closed eyes — arcs */}
             <path d="M -38 -2 Q -28 -10 -18 -2" stroke="#581C87" strokeWidth="3.5" strokeLinecap="round" fill="none" />
             <path d="M 18 -2 Q 28 -10 38 -2" stroke="#581C87" strokeWidth="3.5" strokeLinecap="round" fill="none" />
           </g>
         ) : (
           <>
-            {/* Pupils — large, sparkly anime-style */}
+            {/* Pupils - size and glow react to audioLevel */}
             <motion.circle
-              cx="-28" cy={isSpeaking ? "-2" : "2"} r="6" fill="#581C87"
+              cx="-28" cy={isSpeaking ? "-2" : "2"} r={6 + al * 3} fill="#581C87"
               animate={{
                 x: status === "listening" ? [-5, 5, -5] : 0,
                 y: status === "listening" ? [-2, 2, -2] : 0,
@@ -239,41 +147,7 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.circle
-              cx="28" cy={isSpeaking ? "-2" : "2"} r="6" fill="#581C87"
-              animate={{
-                x: status === "listening" ? [-5, 5, -5] : 0,
-                y: status === "listening" ? [-2, 2, -2] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            {/* Large highlights */}
-            <motion.circle
-              cx="-31" cy={isSpeaking ? "-5" : "-1"} r="2.5" fill="white"
-              animate={{
-                x: status === "listening" ? [-5, 5, -5] : 0,
-                y: status === "listening" ? [-2, 2, -2] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.circle
-              cx="25" cy={isSpeaking ? "-5" : "-1"} r="2.5" fill="white"
-              animate={{
-                x: status === "listening" ? [-5, 5, -5] : 0,
-                y: status === "listening" ? [-2, 2, -2] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            {/* Small secondary highlights */}
-            <motion.circle
-              cx="-25" cy={isSpeaking ? "1" : "5"} r="1.5" fill="white" opacity="0.6"
-              animate={{
-                x: status === "listening" ? [-5, 5, -5] : 0,
-                y: status === "listening" ? [-2, 2, -2] : 0,
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.circle
-              cx="31" cy={isSpeaking ? "1" : "5"} r="1.5" fill="white" opacity="0.6"
+              cx="28" cy={isSpeaking ? "-2" : "2"} r={6 + al * 3} fill="#581C87"
               animate={{
                 x: status === "listening" ? [-5, 5, -5] : 0,
                 y: status === "listening" ? [-2, 2, -2] : 0,
@@ -284,7 +158,16 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
         )}
 
         {/* Mouth */}
-        {isSpeaking ? (
+        {status === "listening" ? (
+          <motion.path
+            d="M -10 22 Q 0 30 10 22"
+            stroke="#581C87"
+            strokeWidth="4"
+            strokeLinecap="round"
+            fill="none"
+            animate={{ d: `M -${10 + al * 5} 22 Q 0 ${30 + al * 10} ${10 + al * 5} 22` }}
+          />
+        ) : isSpeaking ? (
           <motion.path
             d="M -10 22 Q 0 36 10 22 Q 0 36 -10 22"
             fill="#581C87"
@@ -296,22 +179,6 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
             }}
             transition={{ duration: 0.15, repeat: Infinity, repeatType: "mirror" }}
           />
-        ) : status === "listening" ? (
-          <path
-            d="M -10 22 Q 0 30 10 22"
-            stroke="#581C87"
-            strokeWidth="4"
-            strokeLinecap="round"
-            fill="none"
-          />
-        ) : status === "connecting" ? (
-          <path
-            d="M -8 24 Q 0 19 8 24"
-            stroke="#581C87"
-            strokeWidth="4"
-            strokeLinecap="round"
-            fill="none"
-          />
         ) : (
           <path
             d="M -8 22 Q 0 28 8 22"
@@ -321,20 +188,6 @@ export function FairyAvatar({ status, isSpeaking }: Props) {
             fill="none"
           />
         )}
-
-        {/* Blinking overlay */}
-        <motion.path
-          d="M -45 -18 L 45 -18 L 45 18 L -45 18 Z"
-          fill="url(#fairyBodyGradient)"
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: status === "idle" ? [0, 0, 1, 0, 0] : 0 }}
-          transition={{ duration: 4, times: [0, 0.9, 0.95, 0.98, 1], repeat: Infinity }}
-          style={{ transformOrigin: "0 -18px" }}
-        />
-
-        {/* Blushes — soft pink/purple */}
-        <circle cx="-42" cy="14" r="8" fill="#F0ABFC" opacity="0.6" />
-        <circle cx="42" cy="14" r="8" fill="#F0ABFC" opacity="0.6" />
       </g>
     </svg>
   );

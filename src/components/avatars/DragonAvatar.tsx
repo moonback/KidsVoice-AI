@@ -1,15 +1,13 @@
 import { motion } from "motion/react";
-
-interface Props {
-  status: "idle" | "connecting" | "listening";
-  isSpeaking: boolean;
-}
+import type { AvatarProps } from "./AvatarProps";
 
 /**
- * Dragon Avatar — A cute friendly dragon with small horns,
- * a textured body, and tiny wings.
+ * Dragon Avatar — Friendly dragon.
+ * Audio level drives wing flapping speed, smoke particle intensity, and horn glow.
  */
-export function DragonAvatar({ status, isSpeaking }: Props) {
+export function DragonAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
+  const al = status === "listening" ? audioLevel : 0;
+
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(16,185,129,0.5)]">
       <defs>
@@ -24,26 +22,28 @@ export function DragonAvatar({ status, isSpeaking }: Props) {
         </linearGradient>
       </defs>
 
-      {/* Tiny Wings */}
+      {/* Tiny Wings - flapping reacts to audioLevel */}
       <motion.path
         d="M 40 100 Q 10 70 35 120"
         fill="#047857"
         opacity="0.6"
         animate={{
-          rotate: isSpeaking ? [-10, 10, -10] : status === "listening" ? [-5, 5, -5] : 0,
+          rotate: isSpeaking ? [-10, 10, -10] : status === "listening" ? [-5 - al * 15, 5 + al * 15, -5 - al * 15] : 0,
+          scale: status === "listening" ? [1, 1 + al * 0.2, 1] : 1,
         }}
         style={{ transformOrigin: "40px 100px" }}
-        transition={{ duration: 0.4, repeat: Infinity }}
+        transition={{ duration: Math.max(0.1, 0.4 - al * 0.3), repeat: Infinity }}
       />
       <motion.path
         d="M 160 100 Q 190 70 165 120"
         fill="#047857"
         opacity="0.6"
         animate={{
-          rotate: isSpeaking ? [10, -10, 10] : status === "listening" ? [5, -5, 5] : 0,
+          rotate: isSpeaking ? [10, -10, 10] : status === "listening" ? [5 + al * 15, -5 - al * 15, 5 + al * 15] : 0,
+          scale: status === "listening" ? [1, 1 + al * 0.2, 1] : 1,
         }}
         style={{ transformOrigin: "160px 100px" }}
-        transition={{ duration: 0.4, repeat: Infinity }}
+        transition={{ duration: Math.max(0.1, 0.4 - al * 0.3), repeat: Infinity }}
       />
 
       {/* Back Spikes */}
@@ -63,20 +63,24 @@ export function DragonAvatar({ status, isSpeaking }: Props) {
         fill="url(#dragonBodyGradient)"
       />
 
-      {/* Horns */}
+      {/* Horns - glow reacts to audioLevel */}
       <motion.path
         d="M 75 45 Q 65 20 55 35"
         stroke="#F59E0B"
-        strokeWidth="6"
+        strokeWidth={6 + al * 2}
         strokeLinecap="round"
         fill="none"
+        animate={{ opacity: status === "listening" ? [0.6, 1, 0.6] : 1 }}
+        transition={{ duration: 0.5, repeat: Infinity }}
       />
       <motion.path
         d="M 125 45 Q 135 20 145 35"
         stroke="#F59E0B"
-        strokeWidth="6"
+        strokeWidth={6 + al * 2}
         strokeLinecap="round"
         fill="none"
+        animate={{ opacity: status === "listening" ? [0.6, 1, 0.6] : 1 }}
+        transition={{ duration: 0.5, repeat: Infinity }}
       />
 
       <g transform="translate(100, 100)">
@@ -91,15 +95,16 @@ export function DragonAvatar({ status, isSpeaking }: Props) {
           </g>
         ) : (
           <>
+            {/* Pupils - size reacts to audioLevel */}
             <motion.circle
-              cx="-32" cy={isSpeaking ? "-7" : "-3"} r="6" fill="#064E3B"
+              cx="-32" cy={isSpeaking ? "-7" : "-3"} r={6 + al * 3} fill="#064E3B"
               animate={{
                 x: status === "listening" ? [-6, 6, -6] : 0,
               }}
               transition={{ duration: 3, repeat: Infinity }}
             />
             <motion.circle
-              cx="32" cy={isSpeaking ? "-7" : "-3"} r="6" fill="#064E3B"
+              cx="32" cy={isSpeaking ? "-7" : "-3"} r={6 + al * 3} fill="#064E3B"
               animate={{
                 x: status === "listening" ? [-6, 6, -6] : 0,
               }}
@@ -108,21 +113,26 @@ export function DragonAvatar({ status, isSpeaking }: Props) {
           </>
         )}
 
-        {/* Nostrils */}
-        <circle cx="-8" cy="15" r="3" fill="#064E3B" opacity="0.4" />
-        <circle cx="8" cy="15" r="3" fill="#064E3B" opacity="0.4" />
-
-        {/* Smoke/Fire particles when speaking */}
-        {isSpeaking && (
+        {/* Smoke/Sparkle particles when listening - reacts to audioLevel */}
+        {status === "listening" && al > 0.1 && (
           <motion.g>
-             <motion.circle cx="0" cy="25" r="4" fill="#F59E0B" animate={{ y: [0, 20], opacity: [1, 0], scale: [1, 2] }} transition={{ duration: 0.5, repeat: Infinity }} />
-             <motion.circle cx="-10" cy="22" r="3" fill="#EF4444" animate={{ y: [0, 15], opacity: [1, 0], scale: [1, 1.5] }} transition={{ duration: 0.4, repeat: Infinity, delay: 0.1 }} />
-             <motion.circle cx="10" cy="22" r="3" fill="#FCD34D" animate={{ y: [0, 15], opacity: [1, 0], scale: [1, 1.5] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }} />
+             <motion.circle cx="0" cy="20" r={2 + al * 4} fill="#F59E0B" animate={{ y: [0, -20 - al * 30], opacity: [1, 0], x: [-5, 5, -5] }} transition={{ duration: 0.6, repeat: Infinity }} />
+             <motion.circle cx="-10" cy="18" r={1 + al * 3} fill="#EF4444" animate={{ y: [0, -15 - al * 25], opacity: [1, 0], x: [5, -5, 5] }} transition={{ duration: 0.5, repeat: Infinity, delay: 0.1 }} />
+             <motion.circle cx="10" cy="18" r={1 + al * 3} fill="#FCD34D" animate={{ y: [0, -15 - al * 25], opacity: [1, 0], x: [-3, 3, -3] }} transition={{ duration: 0.7, repeat: Infinity, delay: 0.2 }} />
           </motion.g>
         )}
 
         {/* Mouth */}
-        {isSpeaking ? (
+        {status === "listening" ? (
+          <motion.path
+            d="M -12 28 Q 0 35 12 28"
+            stroke="#064E3B"
+            strokeWidth="5"
+            strokeLinecap="round"
+            fill="none"
+            animate={{ d: `M -${12 + al * 8} 28 Q 0 ${35 + al * 15} ${12 + al * 8} 28` }}
+          />
+        ) : isSpeaking ? (
           <motion.path
             d="M -15 25 Q 0 45 15 25 Q 0 50 -15 25"
             fill="#064E3B"
@@ -132,16 +142,6 @@ export function DragonAvatar({ status, isSpeaking }: Props) {
         ) : (
           <path d="M -12 28 Q 0 35 12 28" stroke="#064E3B" strokeWidth="5" strokeLinecap="round" fill="none" />
         )}
-
-        {/* Blinking */}
-        <motion.path
-          d="M -50 -25 L 50 -25 L 50 15 L -50 15 Z"
-          fill="url(#dragonBodyGradient)"
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: status === "idle" ? [0, 0, 1, 0, 0] : 0 }}
-          transition={{ duration: 4, times: [0, 0.9, 0.95, 0.98, 1], repeat: Infinity }}
-          style={{ transformOrigin: "0 -25px" }}
-        />
       </g>
     </svg>
   );
