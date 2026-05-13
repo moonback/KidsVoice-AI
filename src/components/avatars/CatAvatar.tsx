@@ -8,6 +8,7 @@ import type { AvatarProps } from "./AvatarProps";
 export function CatAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
   const normalizedAudioLevel = Number.isFinite(audioLevel) ? Math.min(1, Math.max(0, audioLevel)) : 0;
   const al = status === "listening" ? normalizedAudioLevel : 0;
+  const radius = (value: number) => (Number.isFinite(value) ? value : 0);
 
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(244,114,182,0.5)]">
@@ -76,14 +77,14 @@ export function CatAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
           <>
             {/* Pupils - size and glow react to audioLevel */}
             <motion.circle
-              cx="-30" cy={isSpeaking ? "-7" : "-3"} r={7 + al * 4} fill="#4C1D95"
+              cx="-30" cy={isSpeaking ? "-7" : "-3"} r={radius(7 + al * 4)} fill="#4C1D95"
               animate={{
                 scaleY: [1, 1, 0.1, 1, 1],
               }}
               transition={{ duration: 4, repeat: Infinity }}
             />
             <motion.circle
-              cx="30" cy={isSpeaking ? "-7" : "-3"} r={7 + al * 4} fill="#4C1D95"
+              cx="30" cy={isSpeaking ? "-7" : "-3"} r={radius(7 + al * 4)} fill="#4C1D95"
               animate={{
                 scaleY: [1, 1, 0.1, 1, 1],
               }}

@@ -8,6 +8,7 @@ import type { AvatarProps } from "./AvatarProps";
 export function DragonAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
   const normalizedAudioLevel = Number.isFinite(audioLevel) ? Math.min(1, Math.max(0, audioLevel)) : 0;
   const al = status === "listening" ? normalizedAudioLevel : 0;
+  const radius = (value: number) => (Number.isFinite(value) ? value : 0);
 
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(16,185,129,0.5)]">
@@ -98,14 +99,14 @@ export function DragonAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps
           <>
             {/* Pupils - size reacts to audioLevel */}
             <motion.circle
-              cx="-32" cy={isSpeaking ? "-7" : "-3"} r={6 + al * 3} fill="#064E3B"
+              cx="-32" cy={isSpeaking ? "-7" : "-3"} r={radius(6 + al * 3)} fill="#064E3B"
               animate={{
                 x: status === "listening" ? [-6, 6, -6] : 0,
               }}
               transition={{ duration: 3, repeat: Infinity }}
             />
             <motion.circle
-              cx="32" cy={isSpeaking ? "-7" : "-3"} r={6 + al * 3} fill="#064E3B"
+              cx="32" cy={isSpeaking ? "-7" : "-3"} r={radius(6 + al * 3)} fill="#064E3B"
               animate={{
                 x: status === "listening" ? [-6, 6, -6] : 0,
               }}
@@ -117,9 +118,9 @@ export function DragonAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps
         {/* Smoke/Sparkle particles when listening - reacts to audioLevel */}
         {status === "listening" && al > 0.1 && (
           <motion.g>
-             <motion.circle cx="0" cy="20" r={2 + al * 4} fill="#F59E0B" animate={{ y: [0, -20 - al * 30], opacity: [1, 0], x: [-5, 5, -5] }} transition={{ duration: 0.6, repeat: Infinity }} />
-             <motion.circle cx="-10" cy="18" r={1 + al * 3} fill="#EF4444" animate={{ y: [0, -15 - al * 25], opacity: [1, 0], x: [5, -5, 5] }} transition={{ duration: 0.5, repeat: Infinity, delay: 0.1 }} />
-             <motion.circle cx="10" cy="18" r={1 + al * 3} fill="#FCD34D" animate={{ y: [0, -15 - al * 25], opacity: [1, 0], x: [-3, 3, -3] }} transition={{ duration: 0.7, repeat: Infinity, delay: 0.2 }} />
+             <motion.circle cx="0" cy="20" r={radius(2 + al * 4)} fill="#F59E0B" animate={{ y: [0, -20 - al * 30], opacity: [1, 0], x: [-5, 5, -5] }} transition={{ duration: 0.6, repeat: Infinity }} />
+             <motion.circle cx="-10" cy="18" r={radius(1 + al * 3)} fill="#EF4444" animate={{ y: [0, -15 - al * 25], opacity: [1, 0], x: [5, -5, 5] }} transition={{ duration: 0.5, repeat: Infinity, delay: 0.1 }} />
+             <motion.circle cx="10" cy="18" r={radius(1 + al * 3)} fill="#FCD34D" animate={{ y: [0, -15 - al * 25], opacity: [1, 0], x: [-3, 3, -3] }} transition={{ duration: 0.7, repeat: Infinity, delay: 0.2 }} />
           </motion.g>
         )}
 

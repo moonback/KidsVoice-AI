@@ -8,6 +8,7 @@ import type { AvatarProps } from "./AvatarProps";
 export function FairyAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
   const normalizedAudioLevel = Number.isFinite(audioLevel) ? Math.min(1, Math.max(0, audioLevel)) : 0;
   const al = status === "listening" ? normalizedAudioLevel : 0;
+  const radius = (value: number) => (Number.isFinite(value) ? value : 0);
 
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(232,121,249,0.5)]">
@@ -33,7 +34,7 @@ export function FairyAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps)
 
       {/* Sparkle particles - count and intensity react to audioLevel */}
       <motion.circle
-        cx="40" cy="45" r={2 + al * 2}
+        cx="40" cy="45" r={radius(2 + al * 2)}
         fill="#FDE68A"
         animate={{
           opacity: [0, 1, 0],
@@ -43,7 +44,7 @@ export function FairyAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps)
         transition={{ duration: Math.max(0.2, 2 - al * 1.5), repeat: Infinity, delay: 0 }}
       />
       <motion.circle
-        cx="160" cy="55" r={1.5 + al * 1.5}
+        cx="160" cy="55" r={radius(1.5 + al * 1.5)}
         fill="#FDE68A"
         animate={{
           opacity: [0, 1, 0],
@@ -54,7 +55,7 @@ export function FairyAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps)
       />
       {al > 0.3 && (
         <motion.circle
-          cx="100" cy="40" r={2 + al * 3}
+          cx="100" cy="40" r={radius(2 + al * 3)}
           fill="#FDE68A"
           animate={{ opacity: [0, 1, 0], scale: [0.5, 2, 0.5], y: [0, -20, 0] }}
           transition={{ duration: 0.5, repeat: Infinity }}
@@ -140,7 +141,7 @@ export function FairyAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps)
           <>
             {/* Pupils - size and glow react to audioLevel */}
             <motion.circle
-              cx="-28" cy={isSpeaking ? "-2" : "2"} r={6 + al * 3} fill="#581C87"
+              cx="-28" cy={isSpeaking ? "-2" : "2"} r={radius(6 + al * 3)} fill="#581C87"
               animate={{
                 x: status === "listening" ? [-5, 5, -5] : 0,
                 y: status === "listening" ? [-2, 2, -2] : 0,
@@ -148,7 +149,7 @@ export function FairyAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps)
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.circle
-              cx="28" cy={isSpeaking ? "-2" : "2"} r={6 + al * 3} fill="#581C87"
+              cx="28" cy={isSpeaking ? "-2" : "2"} r={radius(6 + al * 3)} fill="#581C87"
               animate={{
                 x: status === "listening" ? [-5, 5, -5] : 0,
                 y: status === "listening" ? [-2, 2, -2] : 0,

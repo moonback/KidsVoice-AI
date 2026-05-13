@@ -8,6 +8,7 @@ import type { AvatarProps } from "./AvatarProps";
 export function FoxAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
   const normalizedAudioLevel = Number.isFinite(audioLevel) ? Math.min(1, Math.max(0, audioLevel)) : 0;
   const al = status === "listening" ? normalizedAudioLevel : 0;
+  const radius = (value: number) => (Number.isFinite(value) ? value : 0);
 
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(251,146,60,0.5)]">
@@ -113,7 +114,7 @@ export function FoxAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
           <>
             {/* Pupils - glow and size react to audioLevel */}
             <motion.circle
-              cx="-28" cy={isSpeaking ? "-7" : "-3"} r={6 + al * 2} fill="#78350F"
+              cx="-28" cy={isSpeaking ? "-7" : "-3"} r={radius(6 + al * 2)} fill="#78350F"
               animate={{
                 x: status === "listening" ? [-5, 5, -5] : 0,
                 y: status === "listening" ? [-2, 2, -2] : 0,
@@ -121,7 +122,7 @@ export function FoxAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.circle
-              cx="28" cy={isSpeaking ? "-7" : "-3"} r={6 + al * 2} fill="#78350F"
+              cx="28" cy={isSpeaking ? "-7" : "-3"} r={radius(6 + al * 2)} fill="#78350F"
               animate={{
                 x: status === "listening" ? [-5, 5, -5] : 0,
                 y: status === "listening" ? [-2, 2, -2] : 0,

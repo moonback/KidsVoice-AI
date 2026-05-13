@@ -8,6 +8,7 @@ import type { AvatarProps } from "./AvatarProps";
 export function RobotAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
   const normalizedAudioLevel = Number.isFinite(audioLevel) ? Math.min(1, Math.max(0, audioLevel)) : 0;
   const al = status === "listening" ? normalizedAudioLevel : 0;
+  const radius = (value: number) => (Number.isFinite(value) ? value : 0);
 
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_30px_rgba(79,70,229,0.4)]">
@@ -33,7 +34,7 @@ export function RobotAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps)
         <motion.circle 
           cx="100" cy="10" r="5" 
           fill={status === "connecting" ? "#EF4444" : "#6366F1"} 
-          animate={{ opacity: [1, 0.3 + al * 0.7, 1], r: [5, 5 + al * 3, 5] }}
+          animate={{ opacity: [1, 0.3 + al * 0.7, 1], r: [radius(5), radius(5 + al * 3), radius(5)] }}
           transition={{ duration: Math.max(0.15, 0.8 - al * 0.6), repeat: Infinity }}
         />
       </motion.g>
