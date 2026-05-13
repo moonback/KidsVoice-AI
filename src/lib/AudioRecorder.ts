@@ -3,7 +3,7 @@ import { IAudioRecorder } from "./AudioService";
 export class AudioRecorder implements IAudioRecorder {
   private stream: MediaStream | null = null;
   private audioContext: AudioContext | null = null;
-  private processor: ScriptProcessorNode | null = null;
+  private workletNode: AudioWorkletNode | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
 
   async start(
@@ -21,22 +21,21 @@ export class AudioRecorder implements IAudioRecorder {
 
       this.audioContext = new AudioContext({ sampleRate: 16000 });
       this.source = this.audioContext.createMediaStreamSource(this.stream);
-      
-      // 4096 buffer size is a reasonable trade-off between latency and smoothness
-      this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
 
-      this.processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
+      await this.audioContext.audioWorklet.addModule("/audio-recorder-processor.js");
+      this.workletNode = new AudioWorkletNode(this.audioContext, "audio-recorder-processor");
 
-        // Calculate RMS audio level (0-1) for reactive animations
+      this.workletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
+        const inputData = event.data;
+        if (!inputData || inputData.length === 0) return;
+
         if (onAudioLevel) {
           let sum = 0;
           for (let i = 0; i < inputData.length; i++) {
             sum += inputData[i] * inputData[i];
           }
           const rms = Math.sqrt(sum / inputData.length);
-          // Amplify and clamp to 0-1 range for better visual reactivity
-          const level = Math.min(1, rms * 3);
+          const level = Number.isFinite(rms) ? Math.min(1, Math.max(0, rms * 3)) : 0;
           onAudioLevel(level);
         }
 
@@ -45,8 +44,8 @@ export class AudioRecorder implements IAudioRecorder {
         onAudioData(base64);
       };
 
-      this.source.connect(this.processor);
-      this.processor.connect(this.audioContext.destination);
+      this.source.connect(this.workletNode);
+      this.workletNode.connect(this.audioContext.destination);
     } catch (error) {
       console.error("Error starting audio recording:", error);
       throw error;
@@ -54,10 +53,10 @@ export class AudioRecorder implements IAudioRecorder {
   }
 
   stop() {
-    if (this.processor) {
-      this.processor.disconnect();
-      this.processor.onaudioprocess = null;
-      this.processor = null;
+    if (this.workletNode) {
+      this.workletNode.disconnect();
+      this.workletNode.port.onmessage = null;
+      this.workletNode = null;
     }
     if (this.source) {
       this.source.disconnect();
@@ -78,7 +77,7 @@ export class AudioRecorder implements IAudioRecorder {
     const view = new DataView(buffer);
     let offset = 0;
     for (let i = 0; i < float32Array.length; i++, offset += 2) {
-      let s = Math.max(-1, Math.min(1, float32Array[i]));
+      const s = Math.max(-1, Math.min(1, float32Array[i]));
       view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
     }
     return new Int16Array(buffer);
