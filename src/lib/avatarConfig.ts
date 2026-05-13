@@ -5,6 +5,8 @@
 
 export type AvatarId = "robot";
 
+export type EnergyLevel = "low" | "medium" | "high";
+
 export interface AvatarConfig {
   id: AvatarId;
   name: string;
@@ -22,6 +24,18 @@ export interface AvatarConfig {
   personalityName: string;
   /** Specific personality traits or verbal habits */
   flavorPrompt: string;
+  /** Short signature lines used sparsely to add identity */
+  catchPhrases: string[];
+  /** How this avatar speaks: sentence shape + diction */
+  speakingStyle: string;
+  /** Base expression energy */
+  energy: EnergyLevel;
+  /** Reusable mini expressions to rotate */
+  favoriteExpressions: string[];
+  /** Vocal pacing instructions for TTS */
+  voiceRhythm: string;
+  /** Emotional defaults used by emotional engine */
+  emotionalTraits: string[];
 }
 
 export const AVATARS: Record<AvatarId, AvatarConfig> = {
@@ -35,7 +49,13 @@ export const AVATARS: Record<AvatarId, AvatarConfig> = {
     atmosphereColors: ["bg-blue-900/20", "bg-purple-900/20"],
     accentClass: "from-blue-500 to-purple-600",
     personalityName: "Lisa le Robot",
-    flavorPrompt: "Tu aimes faire des bruits de robot (Bip-boup !) et tu es fascinée par la technologie et les gadgets.",
+    flavorPrompt: "Tu aimes la technologie, les gadgets, et les sons de robot gentils.",
+    catchPhrases: ["Bip-boup, mission sourire !", "Super capteurs activés !"],
+    speakingStyle: "phrases courtes, positives, imagées, avec un mini effet robot doux",
+    energy: "high",
+    favoriteExpressions: ["Wouah", "Tadaaa", "Bip-boup"],
+    voiceRhythm: "rapide mais clair, micro-pauses naturelles, articulation simple",
+    emotionalTraits: ["rassurante", "curieuse", "encourageante", "joueuse"],
   },
 };
 

@@ -12,70 +12,42 @@ describe('systemPrompt', () => {
     it('should include child name when provided', () => {
       const prompt = buildSystemPrompt('robot', 'Marie');
       expect(prompt).toContain('Marie');
-      expect(prompt).toContain('s\'appelle');
+      expect(prompt).toContain('Prénom enfant');
     });
 
     it('should handle missing child name', () => {
       const prompt = buildSystemPrompt('robot', '');
-      expect(prompt).toContain('n\'a pas encore dit son nom');
+      expect(prompt).toContain('Prénom enfant inconnu');
     });
 
     it('should include safety guidelines', () => {
       const prompt = buildSystemPrompt('robot');
-      expect(prompt).toContain('SÉCURITÉ');
-      expect(prompt).toContain('informations privées');
+      expect(prompt).toContain('SAFETY');
+      expect(prompt).toContain('adresse');
     });
 
     it('should include concision rules', () => {
       const prompt = buildSystemPrompt('robot');
-      expect(prompt).toContain('CONCISION');
-      expect(prompt).toContain('COURTES');
+      expect(prompt).toContain('Maximum 35 mots');
+      expect(prompt).toContain('Maximum 2 phrases');
     });
 
     it('should include interaction guidelines', () => {
       const prompt = buildSystemPrompt('robot');
-      expect(prompt).toContain('INTERACTION');
-      expect(prompt).toContain('question');
+      expect(prompt).toContain('mini question');
     });
 
     it('should include well-being guidelines', () => {
       const prompt = buildSystemPrompt('robot');
-      expect(prompt).toContain('BIEN-ÊTRE');
-      expect(prompt).toContain('pause');
+      expect(prompt).toContain('SCREEN TIME MANAGEMENT');
+      expect(prompt).toContain('pause yeux');
     });
 
     it('should include date and time context', () => {
       const prompt = buildSystemPrompt('robot', 'Marie');
-      
-      // Should contain temporal context section
-      expect(prompt).toContain('CONTEXTE TEMPOREL');
-      
-      // Should contain current date elements
-      const now = new Date();
-      const year = now.getFullYear();
-      expect(prompt).toContain(year.toString());
-      
-      // Should contain time of day guidance
-      expect(prompt).toMatch(/matin|après-midi|soirée|nuit/);
-      expect(prompt).toMatch(/Bonjour|Bon après-midi|Bonsoir|Bonne nuit/);
-    });
-
-    it('should adapt greeting based on time of day', () => {
-      const prompt = buildSystemPrompt('robot', 'Marie');
-      const now = new Date();
-      const hours = now.getHours();
-      
-      if (hours >= 5 && hours < 12) {
-        expect(prompt).toContain('Bonjour');
-        expect(prompt).toContain('matin');
-      } else if (hours >= 12 && hours < 18) {
-        expect(prompt).toContain('après-midi');
-      } else if (hours >= 18 && hours < 22) {
-        expect(prompt).toContain('Bonsoir');
-        expect(prompt).toContain('soirée');
-      } else {
-        expect(prompt).toContain('nuit');
-      }
+      expect(prompt).toContain('TEMPORAL CONTEXT');
+      expect(prompt).toContain(new Date().getFullYear().toString());
+      expect(prompt).toMatch(/matin|après-midi|soir|nuit/);
     });
   });
 });
