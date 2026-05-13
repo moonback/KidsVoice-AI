@@ -16,12 +16,11 @@ export interface ConversationSession {
 }
 
 const STORAGE_KEY = "kidsvoice_conversation_memory";
-const MAX_TURNS_IN_MEMORY = 20; // Keep last 20 turns (10 exchanges)
-const MAX_SESSIONS = 5; // Keep last 5 sessions
+const MAX_TURNS_IN_MEMORY = 20;
+const MAX_SESSIONS = 5;
+const MAX_CONTEXT_TURNS = 8;
+const MAX_RESPONSE_HISTORY = 5;
 
-/**
- * Load all conversation sessions from localStorage
- */
 export function loadConversationHistory(): ConversationSession[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -33,127 +32,87 @@ export function loadConversationHistory(): ConversationSession[] {
   }
 }
 
-/**
- * Save conversation sessions to localStorage
- */
 function saveConversationHistory(sessions: ConversationSession[]): void {
   try {
-    // Keep only the most recent sessions
-    const recentSessions = sessions.slice(-MAX_SESSIONS);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(recentSessions));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.slice(-MAX_SESSIONS)));
   } catch (error) {
     console.error("Failed to save conversation history:", error);
   }
 }
 
-/**
- * Get the current active session or create a new one
- */
 export function getCurrentSession(childName: string): ConversationSession {
   const sessions = loadConversationHistory();
   const today = new Date().setHours(0, 0, 0, 0);
-  
-  // Find existing session for today
+
   const lastSession = sessions.find(
-    s => s.childName === childName && 
-         new Date(s.startTime).setHours(0, 0, 0, 0) === today
+    (s) => s.childName === childName && new Date(s.startTime).setHours(0, 0, 0, 0) === today,
   );
-  
-  if (lastSession) {
-    return lastSession;
-  }
-  
-  // Create new session (but don't save it yet)
-  return {
-    childName,
-    startTime: Date.now(),
-    turns: [],
-  };
+
+  return lastSession ?? { childName, startTime: Date.now(), turns: [] };
 }
 
-/**
- * Add a conversation turn to the current session
- */
 export function addConversationTurn(
   childName: string,
   speaker: "child" | "companion",
-  message: string
+  message: string,
 ): void {
   const sessions = loadConversationHistory();
   const today = new Date().setHours(0, 0, 0, 0);
-  
-  // Find existing session for today
-  let currentSessionIndex = sessions.findIndex(
-    s => s.childName === childName && 
-         new Date(s.startTime).setHours(0, 0, 0, 0) === today
+
+  let index = sessions.findIndex(
+    (s) => s.childName === childName && new Date(s.startTime).setHours(0, 0, 0, 0) === today,
   );
-  
-  let currentSession: ConversationSession;
-  
-  if (currentSessionIndex >= 0) {
-    // Use existing session
-    currentSession = sessions[currentSessionIndex];
-  } else {
-    // Create new session
-    currentSession = {
-      childName,
-      startTime: Date.now(),
-      turns: [],
-    };
-    currentSessionIndex = sessions.length;
-    sessions.push(currentSession);
+
+  if (index < 0) {
+    sessions.push({ childName, startTime: Date.now(), turns: [] });
+    index = sessions.length - 1;
   }
-  
-  // Add the new turn
-  currentSession.turns.push({
-    timestamp: Date.now(),
-    speaker,
-    message,
-  });
-  
-  // Limit turns in memory
-  if (currentSession.turns.length > MAX_TURNS_IN_MEMORY) {
-    currentSession.turns = currentSession.turns.slice(-MAX_TURNS_IN_MEMORY);
+
+  sessions[index].turns.push({ timestamp: Date.now(), speaker, message });
+  if (sessions[index].turns.length > MAX_TURNS_IN_MEMORY) {
+    sessions[index].turns = sessions[index].turns.slice(-MAX_TURNS_IN_MEMORY);
   }
-  
-  // Update session in array
-  sessions[currentSessionIndex] = currentSession;
-  
+
   saveConversationHistory(sessions);
 }
 
-/**
- * Build a memory context string for the system prompt
- */
-export function buildMemoryContext(childName: string): string {
-  if (!childName) return "";
-  
-  const currentSession = getCurrentSession(childName);
-  
-  if (currentSession.turns.length === 0) {
-    return "C'est ta première conversation avec cet enfant aujourd'hui. Sois accueillant et chaleureux !";
-  }
-  
-  // Get recent turns (last 10 exchanges = 20 turns)
-  const recentTurns = currentSession.turns.slice(-MAX_TURNS_IN_MEMORY);
-  
-  // Format the memory
-  const memoryLines = recentTurns.map(turn => {
-    const speaker = turn.speaker === "child" ? childName : "Toi";
-    return `${speaker}: ${turn.message}`;
-  });
-  
-  return `### MÉMOIRE DE LA CONVERSATION :
-Voici ce dont vous avez parlé récemment (pour que tu puisses te souvenir) :
-
-${memoryLines.join("\n")}
-
-Utilise ces informations pour rendre la conversation plus naturelle et personnelle. Fais référence à ce dont vous avez parlé si c'est pertinent, mais ne répète pas exactement les mêmes choses.`;
+function normalizeForRepeatCheck(text: string): string {
+  return text.toLowerCase().replace(/[!?.,;:]/g, "").replace(/\s+/g, " ").trim();
 }
 
-/**
- * Clear all conversation history (for privacy/reset)
- */
+export function getRecentCompanionMessages(childName: string, limit = MAX_RESPONSE_HISTORY): string[] {
+  if (!childName) return [];
+  const currentSession = getCurrentSession(childName);
+  return currentSession.turns
+    .filter((turn) => turn.speaker === "companion")
+    .slice(-limit)
+    .map((turn) => turn.message);
+}
+
+export function buildAntiRepeatContext(childName: string): string {
+  const recentMessages = getRecentCompanionMessages(childName);
+  if (recentMessages.length === 0) return "";
+
+  const deduped = Array.from(new Set(recentMessages.map(normalizeForRepeatCheck))).slice(-3);
+  if (deduped.length === 0) return "";
+
+  return `Dernières formulations à éviter de répéter: ${deduped.join(" | ")}. Reformule avec des mots différents.`;
+}
+
+export function buildMemoryContext(childName: string): string {
+  if (!childName) return "";
+
+  const currentSession = getCurrentSession(childName);
+  if (currentSession.turns.length === 0) {
+    return "Première conversation du jour: accueil chaleureux, simple et rassurant.";
+  }
+
+  const recentTurns = currentSession.turns.slice(-MAX_CONTEXT_TURNS);
+  const memoryLines = recentTurns.map((turn) => `${turn.speaker === "child" ? childName : "Toi"}: ${turn.message}`);
+
+  return `Mémoire courte utile: ${memoryLines.join(" || ")}`;
+}
+
 export function clearConversationHistory(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
@@ -162,20 +121,16 @@ export function clearConversationHistory(): void {
   }
 }
 
-/**
- * Get conversation statistics for display
- */
 export function getConversationStats(childName: string): {
   totalSessions: number;
   totalTurns: number;
   lastConversationDate: Date | null;
 } {
   const sessions = loadConversationHistory();
-  const childSessions = sessions.filter(s => s.childName === childName);
-  
+  const childSessions = sessions.filter((s) => s.childName === childName);
   const totalTurns = childSessions.reduce((sum, s) => sum + s.turns.length, 0);
   const lastSession = childSessions[childSessions.length - 1];
-  
+
   return {
     totalSessions: childSessions.length,
     totalTurns,
