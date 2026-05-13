@@ -25,7 +25,8 @@ export default function App() {
 
   // Throttle audioLevel updates to animation frames for performance
   const handleAudioLevel = useCallback((level: number) => {
-    audioLevelRef.current = level;
+    const safeLevel = Number.isFinite(level) ? Math.min(1, Math.max(0, level)) : 0;
+    audioLevelRef.current = safeLevel;
     if (!rafRef.current) {
       rafRef.current = requestAnimationFrame(() => {
         setAudioLevel(audioLevelRef.current);
@@ -58,18 +59,23 @@ export default function App() {
       audioPlayer.current?.stop();
       sessionRef.current?.close();
       clearInterval(statusInterval);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
     };
   }, []);
 
   // Usage tracking effect
   useEffect(() => {
-    let timer: any;
+    let timer: ReturnType<typeof setInterval> | null = null;
     if (status === "listening" || isSpeaking) {
       timer = setInterval(() => {
         trackUsage(10); // track 10 seconds
       }, 10000);
     }
-    return () => clearInterval(timer);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, [status, isSpeaking]);
 
   /** Handle avatar selection — persist and update state */
@@ -91,7 +97,12 @@ export default function App() {
     setErrorMsg("");
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("La variable d'environnement VITE_GEMINI_API_KEY est manquante.");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       audioPlayer.current?.clearQueue();
 
       // Connect and await the session before setting callbacks that rely on it
