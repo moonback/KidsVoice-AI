@@ -27,6 +27,13 @@ export default function App() {
   }, []);
 
   const startSession = async () => {
+    // Prevent multiple concurrent sessions
+    if (sessionRef.current) {
+      // If a session already exists, close it before starting a new one
+      sessionRef.current.close();
+      sessionRef.current = null;
+    }
+
     setStatus("connecting");
     setErrorMsg("");
 
@@ -34,17 +41,20 @@ export default function App() {
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       audioPlayer.current?.clearQueue();
 
-      const sessionPromise = ai.live.connect({
+      // Connect and await the session before setting callbacks that rely on it
+      const session = await ai.live.connect({
         model: "gemini-3.1-flash-live-preview",
         callbacks: {
           onopen: () => {
             setStatus("listening");
+            // Start recording only after the session is ready
             audioRecorder.current?.start((base64Data) => {
-              sessionPromise.then((session) => {
-                session.sendRealtimeInput({
+              // Ensure the session is still open before sending
+              if (sessionRef.current) {
+                sessionRef.current.sendRealtimeInput({
                   audio: { data: base64Data, mimeType: "audio/pcm;rate=16000" },
                 });
-              });
+              }
             });
           },
           onmessage: (message: any) => {
@@ -65,6 +75,8 @@ export default function App() {
           onclose: () => {
             setStatus("idle");
             audioRecorder.current?.stop();
+            // Cleanup session reference
+            sessionRef.current = null;
           },
           onerror: (error: any) => {
             console.error("Live API Error", error);
@@ -81,7 +93,8 @@ export default function App() {
         },
       });
 
-      sessionRef.current = await sessionPromise;
+      // Store the active session
+      sessionRef.current = session;
     } catch (err: any) {
       console.error("Failed to start session:", err);
       if (err.name === "NotAllowedError") {
@@ -94,8 +107,15 @@ export default function App() {
   };
 
   const stopSession = () => {
-    sessionRef.current?.close();
-    sessionRef.current = null;
+    // Safely close the session if it exists and is not already closed
+    if (sessionRef.current) {
+      try {
+        sessionRef.current.close();
+      } catch (e) {
+        console.warn("Attempted to close an already closed session", e);
+      }
+      sessionRef.current = null;
+    }
     audioRecorder.current?.stop();
     audioPlayer.current?.clearQueue();
     setStatus("idle");

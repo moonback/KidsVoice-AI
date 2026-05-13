@@ -83,6 +83,7 @@ export function AnimatedCharacter({ status, isSpeaking }: Props) {
 
           {/* Body */}
           <motion.path
+            d="M 100 30 C 150 30 170 80 170 140 C 170 180 130 180 100 180 C 70 180 30 180 30 140 C 30 80 50 30 100 30 Z"
             animate={{
               d: isSpeaking 
                 ? "M 100 20 C 160 20 180 80 180 130 C 180 180 140 190 100 190 C 60 190 20 180 20 130 C 20 80 40 20 100 20 Z" 
