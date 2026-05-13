@@ -25,7 +25,8 @@ export default function App() {
 
   // Throttle audioLevel updates to animation frames for performance
   const handleAudioLevel = useCallback((level: number) => {
-    audioLevelRef.current = level;
+    const safeLevel = Number.isFinite(level) ? Math.min(1, Math.max(0, level)) : 0;
+    audioLevelRef.current = safeLevel;
     if (!rafRef.current) {
       rafRef.current = requestAnimationFrame(() => {
         setAudioLevel(audioLevelRef.current);

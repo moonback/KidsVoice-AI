@@ -19,9 +19,10 @@ interface Props {
 
 export function AnimatedCharacter({ status, isSpeaking, avatarId = "robot", audioLevel = 0, isRestricted = false }: Props) {
   const avatar = AVATARS[avatarId];
+  const safeAudioLevel = Number.isFinite(audioLevel) ? Math.min(1, Math.max(0, audioLevel)) : 0;
 
   // Body bounce — intensity driven by audioLevel when listening
-  const bounceIntensity = status === "listening" ? Math.max(5, audioLevel * 20) : 0;
+  const bounceIntensity = status === "listening" ? Math.max(5, safeAudioLevel * 20) : 0;
 
   const bodyY = isSpeaking
     ? [0, -10, 0]
@@ -34,14 +35,14 @@ export function AnimatedCharacter({ status, isSpeaking, avatarId = "robot", audi
   const bodyTransition = isSpeaking
     ? { duration: 0.3, repeat: Infinity }
     : status === "listening"
-      ? { duration: Math.max(0.3, 2 - audioLevel * 1.5), repeat: Infinity, ease: "easeInOut" as const }
+      ? { duration: Math.max(0.3, 2 - safeAudioLevel * 1.5), repeat: Infinity, ease: "easeInOut" as const }
       : status === "connecting"
         ? { duration: 0.5, repeat: Infinity, ease: "easeInOut" as const }
         : { duration: 3, repeat: Infinity, ease: "easeInOut" as const };
 
   /** Render the appropriate avatar SVG */
   function renderAvatar() {
-    const props = { status: isRestricted ? ("connecting" as const) : status, isSpeaking, audioLevel };
+    const props = { status: isRestricted ? ("connecting" as const) : status, isSpeaking, audioLevel: safeAudioLevel };
     switch (avatarId) {
       case "fox":
         return <FoxAvatar {...props} />;
@@ -61,13 +62,13 @@ export function AnimatedCharacter({ status, isSpeaking, avatarId = "robot", audi
   const glowScale = isSpeaking
     ? [1, 1.2, 1]
     : status === "listening"
-      ? 1 + audioLevel * 0.4
+      ? 1 + safeAudioLevel * 0.4
       : 1;
 
   const glowOpacity = isSpeaking
     ? 0.8
     : status === "listening"
-      ? 0.3 + audioLevel * 0.5
+      ? 0.3 + safeAudioLevel * 0.5
       : 0.3;
 
   return (
