@@ -6,7 +6,8 @@ import type { AvatarProps } from "./AvatarProps";
  * Audio level drives wing flapping speed, sparkle intensity, and eye glow.
  */
 export function FairyAvatar({ status, isSpeaking, audioLevel = 0 }: AvatarProps) {
-  const al = status === "listening" ? audioLevel : 0;
+  const normalizedAudioLevel = Number.isFinite(audioLevel) ? Math.min(1, Math.max(0, audioLevel)) : 0;
+  const al = status === "listening" ? normalizedAudioLevel : 0;
 
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_10px_20px_rgba(232,121,249,0.5)]">
