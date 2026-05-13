@@ -19,7 +19,7 @@ Ce document présente la vision produit de **KidsVoice AI** et détaille le chem
 
 - [ ] **Proxy Serveur / BFF (Backend for Frontend)** : Migration de la logique Google API vers un backend Express ou un serverless function (Vercel/Supabase Functions) pour **cacher la clé API Gemini**.
 - [ ] **Supabase Auth** : Intégration de l'authentification (Google OAuth ou PIN) pour que chaque enfant ait un espace fermé.
-- [ ] **Personnalisation locale de l'UI** : Possibilité de choisir entre plusieurs Avatars (Robot, Renard magique, Fée).
+- [ ] **Personnalisation locale de l'UI** : Possibilité de choisir entre plusieurs Avatars (Robot, Renard magique, Fée,...).
 - [ ] **Sélecteur de niveau** : Ajustement automatique du prompt système en fonction de l'âge déclaré de l'enfant (ex: 4-6 ans vs 8-10 ans).
 
 ---
